@@ -29,8 +29,8 @@ import MentionVolumeChart from "../Components/MentionVolume";
 import SentimentRanking from "../Components/SentimentRanking";
 
 import axios from 'axios';
-import MultiDimensionalComparison from "@/Components/MultiDimentional";
-import FilterChips from "@/Components/Filters/FilterChips";
+import MultiDimensionalComparison from "../Components/MultiDimentional";
+import FilterChips from "../Components/Filters/FilterChips";
 const BASE_URL = import.meta.env.VITE_BASE_URL;
  
 

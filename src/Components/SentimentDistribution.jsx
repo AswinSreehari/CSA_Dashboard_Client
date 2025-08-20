@@ -13,7 +13,7 @@ import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from "../components/ui/chart";
+} from "../Components/ui/chart";
 import axios from "axios";
 
 export const description = "A pie chart with a label";

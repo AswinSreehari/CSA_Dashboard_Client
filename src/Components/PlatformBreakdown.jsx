@@ -19,7 +19,7 @@ import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from '../components/ui/chart';
+} from '../Components/ui/chart';
 
 const COLORS = {
   positive: '#22c55e',
