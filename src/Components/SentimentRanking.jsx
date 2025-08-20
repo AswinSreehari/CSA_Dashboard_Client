@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Card, CardContent } from "../components/ui/card";
-import { Progress } from "../components/ui/progress";
+import { Card, CardContent } from "../Components/ui/card";
+import { Progress } from "../Components/ui/progress";
 import axios from "axios";
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
