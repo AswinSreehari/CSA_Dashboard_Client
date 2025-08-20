@@ -1,0 +1,56 @@
+[
+  {
+    "icon": "Camera",
+    "title": "Camera quality",
+    "desc": "Order #1234 completed",
+    "time": "2 min ago",
+    "percentage": "32%",
+    "mentions": "4,234",
+    "color": "yellow"
+  },
+  {
+    "icon": "Battery",
+    "title": "Battery life",
+    "desc": "john.doe@example.com joined",
+    "time": "5 min ago",
+    "percentage": "70%",
+    "mentions": "3,891",
+    "color": "purple"
+  },
+  {
+    "icon": "Package",
+    "title": "Display",
+    "desc": "iPhone 15 Pro stock updated",
+    "time": "10 min ago",
+    "percentage": "50%",
+    "mentions": "3,567",
+    "color": "orange"
+  },
+  {
+    "icon": "BatteryCharging",
+    "title": "Performance",
+    "desc": "Scheduled backup completed",
+    "time": "1 hour ago",
+    "percentage": "22%",
+    "mentions": "8,324",
+    "color": "blue"
+  },
+  {
+    "icon": "DollarSignIcon",
+    "title": "Price",
+    "desc": "Marketing campaign results",
+    "time": "2 hours ago",
+    "percentage": "46%",
+    "mentions": "1,876",
+    "color": "green"
+  },
+  {
+    "icon": "LogsIcon",
+    "title": "Design",
+    "desc": "Marketing campaign results",
+    "time": "2 hours ago",
+    "percentage": "86%",
+    "mentions": "3,890",
+    "color": "red"
+  }
+]
