@@ -1,12 +1,12 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "../ui/button";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
-import { Command, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+} from "../ui/popover";
+import { Command, CommandGroup, CommandInput, CommandItem, CommandList } from "../ui/command";
 import { ListFilter } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import axios from "axios";

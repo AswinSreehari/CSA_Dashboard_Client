@@ -294,8 +294,7 @@ const ToggleClose = ({ open, setOpen }) => {
 };
 
 const ExampleContent = ({ isDark, setIsDark }) => {
-  // Store filters as an object for easy usage in charts
-  const [filters, setFilters] = useState({
+   const [filters, setFilters] = useState({
     dateFrom: "",
     dateTo: "",
     platform: "all",

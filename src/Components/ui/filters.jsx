@@ -1,4 +1,4 @@
-import { Checkbox } from "@/components/ui/checkbox";
+import { Checkbox } from "../ui/checkbox";
 import {
   Command,
   CommandEmpty,
@@ -7,19 +7,19 @@ import {
   CommandItem,
   CommandList,
   CommandSeparator,
-} from "@/components/ui/command";
+} from "../ui/command";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "../ui/dropdown-menu";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
+} from "../ui/popover";
+import { cn } from "../../lib/utils";
 import {
   Calendar,
   CalendarPlus,
@@ -40,8 +40,8 @@ import {
   X,
 } from "lucide-react";
 import { useRef, useState, useEffect } from "react";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback } from "../ui/avatar";
+import { Button } from "../ui/button";
 import { AnimatePresence, motion } from "motion/react";
 
 export const AnimateChangeInHeight = ({
