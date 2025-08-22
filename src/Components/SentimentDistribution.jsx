@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useMemo, useState, useEffect } from "react";
-import { Pie, PieChart, Cell } from "recharts";
+import { Pie, PieChart, Cell, Sector } from "recharts";
 import {
   Card,
   CardContent,
@@ -16,21 +16,61 @@ import {
 } from "../Components/ui/chart";
 import axios from "axios";
 
-export const description = "A pie chart with a label";
+export const description = "A donut chart with a label and platform breakdown per sentiment on hover";
 
 const COLORS = {
-  positive: "#22c55e", // green
-  negative: "#ef4444", // red
-  neutral: "#9ca3af", // gray
+  positive: "oklch(58.8% 0.158 241.966)",  // greenish
+  negative: "oklch(74.6% 0.16 232.661)",   // orangish
+  neutral: "oklch(82.8% 0.111 230.318)",   // yellowish
 };
+const PLATFORM_COLORS = [
+  "#6366F1",
+  "#0EA5E9",
+  "#22D3EE",
+  "#A3E635",
+  "#FBBF24",
+  "#F472B6",
+  "#A78BFA",
+  "#E879F9",
+  "#FB7185",
+  "#FCD34D",
+  "#10B981",
+]; // You may expand or adapt as needed
+
+const LEGEND_ITEMS = [
+  { key: "positive", label: "Positive", color: COLORS.positive },
+  { key: "negative", label: "Negative", color: COLORS.negative },
+  { key: "neutral",  label: "Neutral",  color: COLORS.neutral }
+];
 
 const NEUTRAL_BOOST = 1;
 const BASE_URL = import.meta.env.VITE_BASE_URL;
+
+// Custom sector for enlarging on hover
+const renderActiveShape = (props) => {
+  const {
+    cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill, payload,
+  } = props;
+  return (
+    <g>
+      <Sector
+        cx={cx}
+        cy={cy}
+        innerRadius={innerRadius - 2}
+        outerRadius={outerRadius + 10}
+        startAngle={startAngle}
+        endAngle={endAngle}
+        fill={fill}
+      />
+    </g>
+  );
+};
 
 const SentimentDistribution = () => {
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(null);
 
   useEffect(() => {
     async function fetchSentimentDistribution() {
@@ -49,6 +89,16 @@ const SentimentDistribution = () => {
   }, []);
 
   const dist = data?.sentiment_distribution ?? {};
+
+  // MOCK, adjust API/backend as needed:
+  // Each sentiment key contains an array of platforms with { platform, count } fields for the second ring
+  // Example:
+  // data.platform_breakdown = {
+  //   positive: [ { platform: "Twitter", count: 445 }, ... ],
+  //   neutral: [ ... ],
+  //   negative: [ ... ]
+  // }
+  const platformBreakdown = data?.platform_breakdown ?? {};
 
   const { chartData, usePercentages } = useMemo(() => {
     const hasPct =
@@ -123,6 +173,13 @@ const SentimentDistribution = () => {
 
   const toPct = (v) => `${Number(v).toFixed(1)}%`;
 
+  const totalValue = data?.total_mentions ??
+    (dist.positive || 0) + (dist.neutral || 0) + (dist.negative || 0);
+
+  // Determine which sentiment/platforms to show in the inner ring
+  const hoveredSentiment = chartData[activeIndex]?.key;
+  const innerPlatforms = platformBreakdown?.[hoveredSentiment] || [];
+
   if (loading) return <div>Loading sentiment distribution...</div>;
   if (error)
     return (
@@ -131,11 +188,39 @@ const SentimentDistribution = () => {
 
   return (
     <div>
-      <Card className="lg:col-span-2 flex flex-col mt-5 w-full h-120 bg-white dark:bg-[#0f172a] rounded-lg">
+      <Card className="lg:col-span-2 flex flex-col mt-5 w-full h-120 
+        bg-white dark:bg-[#0f172a] rounded-lg relative overflow-visible
+        border border-gray-100 dark:border-slate-700">
+        {/* Legend in top-right */}
+        <div style={{
+          position: "absolute",
+          top: 22,
+          right: 26,
+          display: "flex",
+          gap: "12px",
+          zIndex: 10,
+        }}>
+          {LEGEND_ITEMS.map((item) => (
+            <div key={item.key} style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+              <span
+                style={{
+                  display: "inline-block",
+                  width: "16px",
+                  height: "16px",
+                  borderRadius: "3px",
+                  background: item.color,
+                  border: "1.5px solid #e2e8f0",
+                }}
+              />
+              <span className="text-xs text-gray-700 dark:text-gray-300 select-none" style={{userSelect:'none'}}>{item.label}</span>
+            </div>
+          ))}
+        </div>
+
         <CardHeader className="items-center pb-0">
           <CardTitle className="text-gray-900 dark:text-gray-100">Sentiment Distribution</CardTitle>
           <CardDescription className="text-gray-600 dark:text-gray-400">
-            Breakdown of sentiment across all mentions
+            Breakdown of sentiment across all platforms
           </CardDescription>
         </CardHeader>
 
@@ -145,6 +230,37 @@ const SentimentDistribution = () => {
             className="[&_.recharts-pie-label-text]:fill-foreground mx-auto aspect-square w-[440px] max-w-full mt-0 pb-0"
           >
             <PieChart width={400} height={400}>
+              {/* Centered label */}
+              <text
+                x="220"
+                y="200"
+                textAnchor="middle"
+                dominantBaseline="middle"
+                className="font-bold text-neutral-700 dark:text-neutral-200"
+                fontSize="24"
+                fill="currentColor"
+                style={{
+                  fontWeight: 700,
+                  pointerEvents: "none",
+                }}
+              >
+                Total
+              </text>
+              <text
+                x="220"
+                y="230"
+                textAnchor="middle"
+                dominantBaseline="middle"
+                className="font-bold  text-neutral-700 dark:text-neutral-200"
+                fontSize="33"
+                fill="currentColor"
+                style={{
+                  fontWeight: 700,
+                  pointerEvents: "none",
+                }}
+              >
+                {totalValue}
+              </text>
               <ChartTooltip
                 content={
                   <ChartTooltipContent
@@ -161,26 +277,60 @@ const SentimentDistribution = () => {
                   />
                 }
               />
+
+              {/* OUTER sentiment ring */}
               <Pie
                 data={chartData}
                 dataKey="value"
                 nameKey="browser"
                 label={(entry) => toPct(entry.payload.percent || 0)}
                 labelLine
-                outerRadius={140}
                 cx="50%"
                 cy="50%"
+                outerRadius={140}
+                innerRadius={90}
                 isAnimationActive={false}
+                activeIndex={activeIndex}
+                activeShape={renderActiveShape}
+                onMouseEnter={(_, i) => setActiveIndex(i)}
+                onMouseLeave={() => setActiveIndex(null)}
               >
                 {chartData.map((entry, i) => (
                   <Cell
                     key={i}
                     fill={entry.fill}
-                    stroke="#ffffff"
-                    strokeWidth={1.2}
+                    stroke="#fff"
+                    strokeWidth={4}
+                    className="dark:stroke-[#1a1a1a]"
                   />
                 ))}
               </Pie>
+
+              {/* INNER platform breakdown for hovered sentiment */}
+              {activeIndex !== null && innerPlatforms.length > 0 && (
+                <Pie
+                  data={innerPlatforms}
+                  dataKey="count"
+                  nameKey="platform"
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={60}
+                  outerRadius={83}
+                  isAnimationActive={false}
+                  label={({ platform, percent }) =>
+                    `${platform}: ${(percent * 100).toFixed(1)}%`
+                  }
+                >
+                  {innerPlatforms.map((p, idx) => (
+                    <Cell
+                      key={idx}
+                      fill={PLATFORM_COLORS[idx % PLATFORM_COLORS.length]}
+                      stroke="#fff"
+                      strokeWidth={2}
+                    />
+                  ))}
+                </Pie>
+              )}
             </PieChart>
           </ChartContainer>
         </CardContent>

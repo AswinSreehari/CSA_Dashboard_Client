@@ -98,6 +98,12 @@ const TopSection = () => {
               <div className="cursor-pointer">{stat.icon}</div>
             </div>
             <p className="text-3xl font-bold text-gray-900 dark:text-white mt-3">{stat.value}</p>
+
+            {/* Range display only under Net Sentiment Score */}
+            {stat.title === "Net Sentiment Score" && (
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Range: -1 to +1</p>
+            )}
+
             <div className="flex items-center gap-2 mt-2">
               {stat.positive ? (
                 <ArrowUpRight className="w-4 h-4 text-green-400" />

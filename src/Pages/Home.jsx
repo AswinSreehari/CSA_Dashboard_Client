@@ -1,5 +1,5 @@
- "use client"
-import React, { useState, useEffect } from "react";
+"use client"
+import React, { useState, useEffect, useMemo } from "react";
 import {
   Home,
   DollarSign,
@@ -19,6 +19,7 @@ import {
   Settings,
   HelpCircle,
   User,
+  Database,
 } from "lucide-react";
 import TopSection from "../Components/TopSection";
 import TopKeywords from "../Components/TopKeywords";
@@ -27,19 +28,27 @@ import PlatformBreakdown from "../Components/PlatformBreakdown";
 import SentimentOvertime from "../Components/SentimentOvertime";
 import MentionVolumeChart from "../Components/MentionVolume";
 import SentimentRanking from "../Components/SentimentRanking";
+import DashboardFilter from "../Components/Filters/DashboardFilter";
 
 import axios from 'axios';
 import MultiDimensionalComparison from "../Components/MultiDimentional";
 import FilterChips from "../Components/Filters/FilterChips";
 const BASE_URL = import.meta.env.VITE_BASE_URL;
- 
+
 
 export const Example = () => {
   const [isDark, setIsDark] = useState(true);
-    const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
+  const [filters, setFilters] = useState({
+    dateFrom: "",
+    dateTo: "",
+    platform: "all",
+  });
 
-    useEffect(() => {
+
+
+  useEffect(() => {
     async function importData() {
       try {
         setLoading(true);
@@ -53,6 +62,8 @@ export const Example = () => {
     }
     importData();
   }, []);
+
+
 
   useEffect(() => {
     if (isDark) {
@@ -78,9 +89,8 @@ const Sidebar = () => {
 
   return (
     <nav
-      className={`sticky top-0 h-screen shrink-0 border-r transition-all duration-300 ease-in-out ${
-        open ? 'w-64' : 'w-16'
-      } border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-2 shadow-sm`}
+      className={`sticky top-0 h-screen shrink-0 border-r transition-all duration-300 ease-in-out ${open ? 'w-64' : 'w-16'
+        } border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-2 shadow-sm`}
     >
       <TitleSection open={open} />
 
@@ -92,20 +102,20 @@ const Sidebar = () => {
           setSelected={setSelected}
           open={open}
         />
-         <Option
+        <Option
           Icon={BarChart3}
           title="Analytics"
           selected={selected}
           setSelected={setSelected}
           open={open}
         />
-         {/* <Option
-          Icon={Tag}
-          title="Tags"
+        <Option
+          Icon={Database}
+          title="Data Source"
           selected={selected}
           setSelected={setSelected}
           open={open}
-        /> */}
+        />
         {/* <Option
           Icon={DollarSign}
           title="Sales"
@@ -147,7 +157,7 @@ const Sidebar = () => {
       </div>
 
       {open && (
-        <div className="border-t border-gray-200 dark:border-gray-800 pt-4 space-y-1">
+        <div className="border-t border-gray-200 dark:border-gray-800 pt-4 space-y-1 absolute bottom-20">
           <div className="px-3 py-2 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
             Account
           </div>
@@ -175,25 +185,23 @@ const Sidebar = () => {
 
 const Option = ({ Icon, title, selected, setSelected, open, notifs }) => {
   const isSelected = selected === title;
-  
+
   return (
     <button
       onClick={() => setSelected(title)}
-      className={`relative flex h-11 w-full items-center rounded-md transition-all duration-200 ${
-        isSelected 
-          ? "bg-blue-50 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 shadow-sm border-l-2 border-blue-500" 
+      className={`relative flex h-11 w-full items-center rounded-md transition-all duration-200 ${isSelected
+          ? "bg-blue-50 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 shadow-sm border-l-2 border-blue-500"
           : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-200"
-      }`}
+        }`}
     >
       <div className="grid h-full w-12 place-content-center">
         <Icon className="h-4 w-4" />
       </div>
-      
+
       {open && (
         <span
-          className={`text-sm font-medium transition-opacity duration-200 ${
-            open ? 'opacity-100' : 'opacity-0'
-          }`}
+          className={`text-sm font-medium transition-opacity duration-200 ${open ? 'opacity-100' : 'opacity-0'
+            }`}
         >
           {title}
         </span>
@@ -268,16 +276,14 @@ const ToggleClose = ({ open, setOpen }) => {
       <div className="flex items-center p-3">
         <div className="grid size-10 place-content-center">
           <ChevronsRight
-            className={`h-4 w-4 transition-transform duration-300 text-gray-500 dark:text-gray-400 ${
-              open ? "rotate-180" : ""
-            }`}
+            className={`h-4 w-4 transition-transform duration-300 text-gray-500 dark:text-gray-400 ${open ? "rotate-180" : ""
+              }`}
           />
         </div>
         {open && (
           <span
-            className={`text-sm font-medium text-gray-600 dark:text-gray-300 transition-opacity duration-200 ${
-              open ? 'opacity-100' : 'opacity-0'
-            }`}
+            className={`text-sm font-medium text-gray-600 dark:text-gray-300 transition-opacity duration-200 ${open ? 'opacity-100' : 'opacity-0'
+              }`}
           >
             Hide
           </span>
@@ -288,6 +294,37 @@ const ToggleClose = ({ open, setOpen }) => {
 };
 
 const ExampleContent = ({ isDark, setIsDark }) => {
+  // Store filters as an object for easy usage in charts
+  const [filters, setFilters] = useState({
+    dateFrom: "",
+    dateTo: "",
+    platform: "all",
+  });
+
+  // Convert filter object to array for passing to DashboardFilter UI
+  const filtersArray = useMemo(() => {
+    return Object.entries(filters)
+      .filter(([_, value]) => value !== "" && value !== "all")
+      .map(([type, value]) => ({
+        id: type,
+        type,
+        value,
+      }));
+  }, [filters]);
+
+  // Receive filter array updates from DashboardFilter and update state object
+  const handleFilterChange = (newFiltersArray) => {
+    const newFiltersObj = {};
+    newFiltersArray.forEach(({ type, value }) => {
+      newFiltersObj[type] = value;
+    });
+    setFilters({
+      dateFrom: newFiltersObj.dateFrom || "",
+      dateTo: newFiltersObj.dateTo || "",
+      platform: newFiltersObj.platform || "all",
+    });
+  };
+
   return (
     <div className="flex-1 bg-gray-50 dark:bg-gray-950 p-6 overflow-auto">
       {/* Header */}
@@ -298,54 +335,45 @@ const ExampleContent = ({ isDark, setIsDark }) => {
         </div>
         <div className="flex items-center gap-4">
           <FilterChips />
-           
+          <DashboardFilter filters={filtersArray} onFilterChange={handleFilterChange} />
           <button
             onClick={() => setIsDark(!isDark)}
             className="flex h-10 w-10 items-center justify-center rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
           >
-            {isDark ? (
-              <Sun className="h-4 w-4" />
-            ) : (
-              <Moon className="h-4 w-4" />
-            )}
+            {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           </button>
           <button className="p-2 rounded-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors">
             <User className="h-5 w-5" />
           </button>
         </div>
       </div>
-      
-       
 
       <TopSection />
-      
+
       {/* Content Grid */}
-     {/* Responsive, wraps automatically when space shrinks (e.g., sidebar open) */}
-<div className="min-w-0 grid gap-5 [grid-template-columns:repeat(auto-fit,minmax(280px,1fr))]">
-  <div className="min-w-0">
-    <TopKeywords />
-  </div>
-  <div className="min-w-0">
-    <SentimentDistribution />
-  </div>
-</div>
-  <div className="flex gap-4">
-    <PlatformBreakdown />
-    <SentimentOvertime />
-  </div>
-  <div>
-    <MentionVolumeChart />
-  </div>
-  <div className="flex gap-10">
-    <SentimentRanking />
-    <MultiDimensionalComparison />
-  </div>
-  
-
-
+      <div className="min-w-0 grid gap-5 [grid-template-columns:repeat(auto-fit,minmax(280px,1fr))]">
+        <div className="min-w-0">
+          <TopKeywords filters={filters} />
+        </div>
+        <div className="min-w-0">
+          <SentimentDistribution filters={filters} />
+        </div>
+      </div>
+      <div className="flex gap-4">
+        <PlatformBreakdown filters={filters} />
+        <SentimentOvertime filters={filters} />
+      </div>
+      <div>
+        <MentionVolumeChart filters={filters} />
+      </div>
+      <div className="flex gap-10">
+        <SentimentRanking filters={filters} />
+        <MultiDimensionalComparison filters={filters} />
+      </div>
     </div>
   );
 };
+
 
 export default Example;
 
@@ -357,7 +385,7 @@ export default Example;
 
 
 
-{/* Quick Stats */}
+{/* Quick Stats */ }
 {/* <div className="space-y-6">
   <div className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 shadow-sm">
     <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Quick Stats</h3>

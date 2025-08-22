@@ -45,15 +45,13 @@ const MentionVolume = () => {
 
   return (
     <div className="w-full rounded-lg p-6 bg-white dark:bg-[#0f172a] shadow-md">
-      <h2 className="mb-2 font-semibold text-gray-900 dark:text-white">
-        Mention Volume Over Time
-      </h2>
+      <h2 className="mb-2 font-semibold text-gray-900 dark:text-white">Mention Volume Over Time</h2>
       <p className="mb-6 text-sm text-gray-600 dark:text-gray-400">
         Track the volume of mentions for Google Pixel
       </p>
 
       <ResponsiveContainer width="100%" height={320}>
-        <LineChart data={data} margin={{ top: 10, right: 16, left: 0, bottom: 0 }}>
+        <LineChart data={data} margin={{ left: 20,}}>
           <defs>
             <linearGradient id="colorBlue" x1="0" y1="0" x2="0" y2="1">
               <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.4} />
@@ -76,6 +74,16 @@ const MentionVolume = () => {
             axisLine={{ stroke: "#334155" }}
             tickLine={false}
             domain={[0, top]}
+            label={{
+              value: "Mentions",
+              angle: -90,
+              position: "insideLeft",
+              dx: -8,
+              dy: 20,
+              fill: "#64748b",
+              fontSize: "1rem",
+              textAnchor: "middle",
+            }}
           />
           <Tooltip
             contentStyle={{

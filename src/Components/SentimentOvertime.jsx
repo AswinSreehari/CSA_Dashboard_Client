@@ -45,15 +45,32 @@ const SentimentOvertime = () => {
         Track sentiment changes for Google Pixel mentions
       </p>
       <ResponsiveContainer width="100%" height={350}>
-        <LineChart data={data}>
+        <LineChart data={data}
+        margin={{ left: 20 }}
+        >
           <CartesianGrid strokeDasharray="3 3" stroke="#cbd5e1" className="dark:stroke-gray-700" />
           <XAxis
             dataKey="created_at"
             stroke="#475569"
             tick={{ fill: "#475569" }}
             className="dark:text-gray-300"
+              
           />
-          <YAxis stroke="#475569" tick={{ fill: "#475569" }} className="dark:text-gray-300" />
+          <YAxis
+            stroke="#475569"
+            tick={{ fill: "#475569" }}
+            className="dark:text-gray-300"
+            label={{
+              value: 'Sentiment Score',
+              angle: -90,
+              position: 'insideLeft',
+              dx: -8,
+              dy: 20,
+              fill: '#64748b',
+              fontSize: '1rem',
+              textAnchor: 'middle',
+            }}
+          />
           <Tooltip
             contentStyle={{
               backgroundColor: "#1e293b",
