@@ -190,8 +190,8 @@ const Option = ({ Icon, title, selected, setSelected, open, notifs }) => {
     <button
       onClick={() => setSelected(title)}
       className={`relative flex h-11 w-full items-center rounded-md transition-all duration-200 ${isSelected
-          ? "bg-blue-50 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 shadow-sm border-l-2 border-blue-500"
-          : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-200"
+        ? "bg-blue-50 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 shadow-sm border-l-2 border-blue-500"
+        : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-200"
         }`}
     >
       <div className="grid h-full w-12 place-content-center">
@@ -294,13 +294,17 @@ const ToggleClose = ({ open, setOpen }) => {
 };
 
 const ExampleContent = ({ isDark, setIsDark }) => {
-   const [filters, setFilters] = useState({
+  // Filters as object state
+  const [filters, setFilters] = useState({
     dateFrom: "",
     dateTo: "",
     platform: "all",
   });
 
-  // Convert filter object to array for passing to DashboardFilter UI
+  // Filtered data fetched after applying filter
+  const [filteredData, setFilteredData] = useState(null);
+
+  // Map filters object to array for DashboardFilter UI
   const filtersArray = useMemo(() => {
     return Object.entries(filters)
       .filter(([_, value]) => value !== "" && value !== "all")
@@ -311,7 +315,7 @@ const ExampleContent = ({ isDark, setIsDark }) => {
       }));
   }, [filters]);
 
-  // Receive filter array updates from DashboardFilter and update state object
+  // Update filters object state from DashboardFilter array updates
   const handleFilterChange = (newFiltersArray) => {
     const newFiltersObj = {};
     newFiltersArray.forEach(({ type, value }) => {
@@ -329,12 +333,20 @@ const ExampleContent = ({ isDark, setIsDark }) => {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Dashboard</h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">Welcome back to your dashboard</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+            Dashboard
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-1">
+            Welcome back to your dashboard
+          </p>
         </div>
         <div className="flex items-center gap-4">
           <FilterChips />
-          <DashboardFilter filters={filtersArray} onFilterChange={handleFilterChange} />
+          <DashboardFilter
+            filters={filtersArray}
+            onFilterChange={handleFilterChange}
+            onDataChange={setFilteredData}
+          />
           <button
             onClick={() => setIsDark(!isDark)}
             className="flex h-10 w-10 items-center justify-center rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
@@ -350,24 +362,26 @@ const ExampleContent = ({ isDark, setIsDark }) => {
       <TopSection />
 
       {/* Content Grid */}
-      <div className="min-w-0 grid gap-5 [grid-template-columns:repeat(auto-fit,minmax(280px,1fr))]">
+      <div
+        className="min-w-0 grid gap-5 [grid-template-columns:repeat(auto-fit,minmax(280px,1fr))]"
+      >
         <div className="min-w-0">
-          <TopKeywords filters={filters} />
+          <TopKeywords filteredData={filteredData} />
         </div>
         <div className="min-w-0">
-          <SentimentDistribution filters={filters} />
+          <SentimentDistribution filteredData={filteredData} />
         </div>
       </div>
       <div className="flex gap-4">
-        <PlatformBreakdown filters={filters} />
-        <SentimentOvertime filters={filters} />
+        <PlatformBreakdown filteredData={filteredData} />
+        <SentimentOvertime filteredData={filteredData} />
       </div>
       <div>
-        <MentionVolumeChart filters={filters} />
+        <MentionVolumeChart filteredData={filteredData} />
       </div>
       <div className="flex gap-10">
-        <SentimentRanking filters={filters} />
-        <MultiDimensionalComparison filters={filters} />
+        <SentimentRanking filteredData={filteredData} />
+        <MultiDimensionalComparison filteredData={filteredData} />
       </div>
     </div>
   );

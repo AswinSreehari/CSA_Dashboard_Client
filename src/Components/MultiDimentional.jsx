@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import {
   RadarChart,
   PolarGrid,
@@ -37,7 +37,54 @@ const CATEGORIES = [
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
-const MultiDimensionalComparison = () => {
+// Helper: aggregate filtered feedback into radar chart data shape
+const aggregateFilteredData = (rawData) => {
+  // Initialize data structure for categories with zero scores for each brand
+  const radarDataMap = {};
+  CATEGORIES.forEach((cat) => {
+    radarDataMap[cat] = { category: cat };
+  });
+
+  // Initialize brand set
+  const brandsSet = new Set();
+
+  // Aggregate sentiment scores by category and brand
+  rawData.forEach(({ category, brand, sentiment }) => {
+    if (!category || !brand || !sentiment) return;
+    if (!radarDataMap[category]) radarDataMap[category] = { category };
+    brandsSet.add(brand);
+
+    // You can customize this scoring logic as needed
+    // Example: positive = 100, neutral = 50, negative = 0
+    let score = 50;
+    if (sentiment.label === "positive") score = 100;
+    else if (sentiment.label === "negative") score = 0;
+
+    // Accumulate average per brand-category (simplification)
+    if (!radarDataMap[category][brand]) {
+      radarDataMap[category][brand] = { totalScore: 0, count: 0 };
+    }
+    radarDataMap[category][brand].totalScore += score;
+    radarDataMap[category][brand].count += 1;
+  });
+
+  // Compute averages
+  const result = Object.entries(radarDataMap).map(([category, brandScores]) => {
+    const obj = { category };
+    brandsSet.forEach((brand) => {
+      if (brandScores[brand]) {
+        obj[brand] = brandScores[brand].totalScore / brandScores[brand].count;
+      } else {
+        obj[brand] = 0;
+      }
+    });
+    return obj;
+  });
+
+  return { data: result, brands: Array.from(brandsSet) };
+};
+
+const MultiDimensionalComparison = ({ filteredData }) => {
   const [chartData, setChartData] = useState([]);
   const [brands, setBrands] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -48,20 +95,30 @@ const MultiDimensionalComparison = () => {
       try {
         setLoading(true);
         setError(null);
+
+        if (filteredData && filteredData.length > 0) {
+          const { data, brands } = aggregateFilteredData(filteredData);
+          setChartData(data);
+          setBrands(brands);
+          setLoading(false);
+          return;
+        }
+
         const res = await axios.get(`${BASE_URL}/api/feedback/radar-comparison`);
-        console.log("it is the res-->",res)
         setChartData(res.data.data);
         setBrands(res.data.brands);
       } catch (err) {
         setError(
           err.message || "Failed to fetch multi-dimensional comparison data"
         );
+        setChartData([]);
+        setBrands([]);
       } finally {
         setLoading(false);
       }
     }
     fetchRadarData();
-  }, []);
+  }, [filteredData]);
 
   if (loading) return <div>Loading comparison chart...</div>;
   if (error)
@@ -108,8 +165,8 @@ const MultiDimensionalComparison = () => {
                 key={brand}
                 name={brand}
                 dataKey={brand}
-                stroke={BRAND_COLORS[brand]}
-                fill={BRAND_COLORS[brand]}
+                stroke={BRAND_COLORS[brand] || "#888888"}
+                fill={BRAND_COLORS[brand] || "#888888"}
                 fillOpacity={0.2}
                 dot={true}
               />

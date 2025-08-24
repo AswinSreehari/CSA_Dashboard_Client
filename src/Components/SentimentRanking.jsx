@@ -6,17 +6,73 @@ import { Progress } from "../Components/ui/progress";
 import axios from "axios";
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
-const SentimentRanking = () => {
+const SentimentRanking = ({ filteredData }) => {
   const [data, setData] = useState({ rankings: [] });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  // Aggregate filteredData into rankings format using `model` as brand name
+  const aggregateFilteredData = (rawData) => {
+    const brandMap = {};
+
+    rawData.forEach(({ model = "Unknown", sentiment }) => {
+      if (!brandMap[model]) {
+        brandMap[model] = {
+          brand: model,
+          mentions: 0,
+          positiveCount: 0,
+          negativeCount: 0,
+        };
+      }
+      brandMap[model].mentions += 1;
+      if (sentiment?.label === "positive") {
+        brandMap[model].positiveCount += 1;
+      }
+      if (sentiment?.label === "negative") {
+        brandMap[model].negativeCount += 1;
+      }
+    });
+
+    const rankingsArray = Object.values(brandMap)
+      .map((b) => {
+        const sentimentPercent = b.mentions
+          ? Math.round((b.positiveCount / b.mentions) * 100)
+          : 0;
+        return {
+          brand: b.brand,
+          mentions: b.mentions,
+          sentiment_percent: sentimentPercent,
+          delta_positive: 0, // optionally calculated with historical data
+          delta_negative: 0,
+          market_share: "N/A", // optionally set if available
+          is_your_brand: false, // set according to your app logic
+        };
+      })
+      .sort((a, b) => b.sentiment_percent - a.sentiment_percent)
+      .map((item, idx) => ({
+        ...item,
+        rank: idx + 1,
+      }));
+
+    return { rankings: rankingsArray };
+  };
+
+  // Use filteredData rankings if available; else fetch default data
   useEffect(() => {
     async function fetchRanking() {
+      if (filteredData && filteredData.length > 0) {
+        setData(aggregateFilteredData(filteredData));
+        setLoading(false);
+        setError(null);
+        return;
+      }
+
       try {
         setLoading(true);
         setError(null);
-        const response = await axios.get(`${BASE_URL}/api/feedback/sentiment-ranking`);
+        const response = await axios.get(
+          `${BASE_URL}/api/feedback/sentiment-ranking`
+        );
         setData(response.data);
       } catch (err) {
         setError(err.message || "Failed to fetch ranking data");
@@ -25,10 +81,13 @@ const SentimentRanking = () => {
       }
     }
     fetchRanking();
-  }, []);
+  }, [filteredData]);
 
   if (loading) return <div>Loading sentiment rankings...</div>;
-  if (error) return <div className="text-red-600 dark:text-red-400">Error: {error}</div>;
+  if (error)
+    return (
+      <div className="text-red-600 dark:text-red-400">Error: {error}</div>
+    );
 
   return (
     <Card className="text-gray-900 dark:text-white bg-white dark:bg-[#0f172a] shadow-md rounded-xl p-4 w-180 my-10">
@@ -46,14 +105,20 @@ const SentimentRanking = () => {
             <div
               key={item.rank}
               className={`p-3 rounded-lg flex items-center justify-between ${
-                item.is_your_brand ? "bg-blue-100 dark:bg-blue-900" : "bg-gray-100 dark:bg-[#1e293b]"
+                item.is_your_brand
+                  ? "bg-blue-100 dark:bg-blue-900"
+                  : "bg-gray-100 dark:bg-[#1e293b]"
               }`}
             >
               {/* Left section */}
               <div>
                 <div className="flex items-center space-x-2 mb-1">
-                  <span className="text-sm font-bold text-gray-900 dark:text-gray-100">#{item.rank}</span>
-                  <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{item.brand}</span>
+                  <span className="text-sm font-bold text-gray-900 dark:text-gray-100">
+                    #{item.rank}
+                  </span>
+                  <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                    {item.brand}
+                  </span>
                   {item.is_your_brand && (
                     <span className="text-xs bg-blue-500 text-white px-2 py-0.5 rounded">
                       Your Brand
@@ -61,18 +126,23 @@ const SentimentRanking = () => {
                   )}
                 </div>
                 <p className="text-xs text-gray-600 dark:text-gray-400">
-                  {item.mentions.toLocaleString()} mentions • {item.market_share} market share
+                  {item.mentions.toLocaleString()} mentions • {item.market_share}{" "}
+                  market share
                 </p>
               </div>
 
               {/* Right section */}
               <div className="flex items-center gap-4 min-w-0">
                 <div className="flex space-x-2 text-xs mr-1">
-                  <span className="text-green-400 leading-none">↑ {item.delta_positive}</span>
-                  <span className="text-red-400 leading-none">↓ {item.delta_negative}</span>
+                  <span className="text-green-400 leading-none">
+                    ↑ {item.delta_positive}
+                  </span>
+                  <span className="text-red-400 leading-none">
+                    ↓ {item.delta_negative}
+                  </span>
                 </div>
                 <span className="text-lg font-bold leading-none whitespace-nowrap text-gray-900 dark:text-gray-100">
-                  {item.sentiment_percent}
+                  {item.sentiment_percent}%
                 </span>
                 <Progress
                   value={parseFloat(item.sentiment_percent)}

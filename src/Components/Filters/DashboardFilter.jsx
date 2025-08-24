@@ -20,43 +20,61 @@ const platformOptions = [
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
-export default function DashboardFilter() {
+export default function DashboardFilter({
+  filters,
+  onDataChange,
+  onFilterChange,
+}) {
   const [open, setOpen] = useState(false);
   const [selectedPlatform, setSelectedPlatform] = useState(null);
   const [commandInput, setCommandInput] = useState("");
-  const [data, setData] = useState(null);  
+  const [data, setData] = useState(null);
   const commandInputRef = useRef(null);
 
-   useEffect(() => {
+  // Sync local selectedPlatform state with parent's filters
+  useEffect(() => {
+    const platformFilter = filters.find((f) => f.type === "platform");
+    setSelectedPlatform(platformFilter ? platformFilter.value : null);
+  }, [filters]);
+
+  useEffect(() => {
     async function fetchFilteredData() {
       try {
-         if (!selectedPlatform || selectedPlatform === "all") {
-        setData(null); 
-        return;
-      }
-        const platformQuery = selectedPlatform && selectedPlatform !== "all" ? selectedPlatform : "";
+        if (!selectedPlatform || selectedPlatform === "all") {
+          setData(null);
+          onDataChange(null);
+          return;
+        }
         const res = await axios.get(`${BASE_URL}/api/feedback/filterdata`, {
-          params: { platform: platformQuery },
+          params: { platform: selectedPlatform },
         });
-        setData(res.data.data);  
-        console.log("Dataaa-....>",res.data.data)
+        setData(res.data.data);
+        onDataChange(res.data.data);
       } catch (error) {
         console.error("Failed to fetch filtered data:", error);
       }
     }
-
     fetchFilteredData();
-  }, [selectedPlatform]);
+  }, [selectedPlatform, onDataChange]);
 
-  // Select a platform from the list
   const onSelectPlatform = (id) => {
-    setSelectedPlatform(id);
+    // Update parent's filters to add/update platform filter
+    const newFilters = filters.filter((f) => f.type !== "platform");
+    if (id !== "all") {
+      newFilters.push({ id: id, type: "platform", value: id });
+    }
+    onFilterChange(newFilters);
     setOpen(false);
     setCommandInput("");
     commandInputRef.current?.blur();
   };
 
-   const removePlatform = () => setSelectedPlatform(null);
+  const removePlatform = () => {
+    // Remove platform filter from parent's filters
+    const newFilters = filters.filter((f) => f.type !== "platform");
+    onFilterChange(newFilters);
+    setSelectedPlatform(null);
+  };
 
   const getPlatformName = (id) =>
     platformOptions.find((p) => p.id === id)?.name || id;
@@ -127,12 +145,10 @@ export default function DashboardFilter() {
             type="button"
             style={{ marginLeft: 8, fontSize: "1.1rem", lineHeight: "1" }}
           >
-            X
+            ×
           </button>
         </div>
       )}
-
-        
     </div>
   );
 }

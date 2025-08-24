@@ -35,7 +35,7 @@ const PLATFORM_COLORS = [
   "#FB7185",
   "#FCD34D",
   "#10B981",
-]; // You may expand or adapt as needed
+]; 
 
 const LEGEND_ITEMS = [
   { key: "positive", label: "Positive", color: COLORS.positive },
@@ -46,10 +46,9 @@ const LEGEND_ITEMS = [
 const NEUTRAL_BOOST = 1;
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
-// Custom sector for enlarging on hover
 const renderActiveShape = (props) => {
   const {
-    cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill, payload,
+    cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill,
   } = props;
   return (
     <g>
@@ -66,14 +65,20 @@ const renderActiveShape = (props) => {
   );
 };
 
-const SentimentDistribution = () => {
+const SentimentDistribution = ({ filteredData }) => {
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const [activeIndex, setActiveIndex] = useState(null);
 
+  // Fetch default data only if no filteredData is provided
   useEffect(() => {
     async function fetchSentimentDistribution() {
+      if (filteredData && filteredData.length > 0) {
+        // If filteredData is present, skip fetching default
+        setData(null);
+        return;
+      }
       try {
         setLoading(true);
         setError(null);
@@ -86,19 +91,21 @@ const SentimentDistribution = () => {
       }
     }
     fetchSentimentDistribution();
-  }, []);
+  }, [filteredData]);
 
-  const dist = data?.sentiment_distribution ?? {};
+  // Using either filteredData or fetched default data for processing
+  const dist = filteredData 
+    ? {
+        positive: filteredData.filter((d) => d.sentiment?.label === "positive").length,
+        negative: filteredData.filter((d) => d.sentiment?.label === "negative").length,
+        neutral: filteredData.filter((d) => d.sentiment?.label === "neutral").length,
+        percentages: null, // no percentages in filtered raw data
+      }
+    : data?.sentiment_distribution ?? {};
 
-  // MOCK, adjust API/backend as needed:
-  // Each sentiment key contains an array of platforms with { platform, count } fields for the second ring
-  // Example:
-  // data.platform_breakdown = {
-  //   positive: [ { platform: "Twitter", count: 445 }, ... ],
-  //   neutral: [ ... ],
-  //   negative: [ ... ]
-  // }
-  const platformBreakdown = data?.platform_breakdown ?? {};
+  const platformBreakdown = filteredData
+    ? {} // you can enhance this later to compute platformBreakdown from filteredData if needed
+    : data?.platform_breakdown ?? {};
 
   const { chartData, usePercentages } = useMemo(() => {
     const hasPct =
@@ -132,8 +139,10 @@ const SentimentDistribution = () => {
       }
     } else {
       const total =
-        (data?.total_mentions ??
-          (dist.positive || 0) + (dist.neutral || 0) + (dist.negative || 0)) || 1;
+        (filteredData
+          ? filteredData.length
+          : data?.total_mentions ??
+            (dist.positive || 0) + (dist.neutral || 0) + (dist.negative || 0)) || 1;
 
       positivePct = ((dist.positive || 0) / total) * 100;
       negativePct = ((dist.negative || 0) / total) * 100;
@@ -169,21 +178,24 @@ const SentimentDistribution = () => {
     ];
 
     return { chartData: rows, usePercentages: hasPct };
-  }, [data, dist]);
+  }, [data, dist, filteredData]);
 
   const toPct = (v) => `${Number(v).toFixed(1)}%`;
 
-  const totalValue = data?.total_mentions ??
-    (dist.positive || 0) + (dist.neutral || 0) + (dist.negative || 0);
+  const totalValue = filteredData
+    ? filteredData.length
+    : data?.total_mentions ??
+      (dist.positive || 0) + (dist.neutral || 0) + (dist.negative || 0);
 
-  // Determine which sentiment/platforms to show in the inner ring
   const hoveredSentiment = chartData[activeIndex]?.key;
   const innerPlatforms = platformBreakdown?.[hoveredSentiment] || [];
 
   if (loading) return <div>Loading sentiment distribution...</div>;
   if (error)
     return (
-      <div className="text-red-500 dark:text-red-400">Error loading data: {error}</div>
+      <div className="text-red-500 dark:text-red-400">
+        Error loading data: {error}
+      </div>
     );
 
   return (
@@ -192,16 +204,21 @@ const SentimentDistribution = () => {
         bg-white dark:bg-[#0f172a] rounded-lg relative overflow-visible
         border border-gray-100 dark:border-slate-700">
         {/* Legend in top-right */}
-        <div style={{
-          position: "absolute",
-          top: 22,
-          right: 26,
-          display: "flex",
-          gap: "12px",
-          zIndex: 10,
-        }}>
+        <div
+          style={{
+            position: "absolute",
+            top: 22,
+            right: 26,
+            display: "flex",
+            gap: "12px",
+            zIndex: 10,
+          }}
+        >
           {LEGEND_ITEMS.map((item) => (
-            <div key={item.key} style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+            <div
+              key={item.key}
+              style={{ display: "flex", alignItems: "center", gap: "5px" }}
+            >
               <span
                 style={{
                   display: "inline-block",
@@ -212,13 +229,20 @@ const SentimentDistribution = () => {
                   border: "1.5px solid #e2e8f0",
                 }}
               />
-              <span className="text-xs text-gray-700 dark:text-gray-300 select-none" style={{userSelect:'none'}}>{item.label}</span>
+              <span
+                className="text-xs text-gray-700 dark:text-gray-300 select-none"
+                style={{ userSelect: "none" }}
+              >
+                {item.label}
+              </span>
             </div>
           ))}
         </div>
 
         <CardHeader className="items-center pb-0">
-          <CardTitle className="text-gray-900 dark:text-gray-100">Sentiment Distribution</CardTitle>
+          <CardTitle className="text-gray-900 dark:text-gray-100">
+            Sentiment Distribution
+          </CardTitle>
           <CardDescription className="text-gray-600 dark:text-gray-400">
             Breakdown of sentiment across all platforms
           </CardDescription>

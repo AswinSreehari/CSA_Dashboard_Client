@@ -1,5 +1,5 @@
-import React, { useEffect, useState, useMemo } from 'react';
-import axios from 'axios';
+import React, { useEffect, useState, useMemo } from "react";
+import axios from "axios";
 import {
   Bar,
   BarChart,
@@ -7,22 +7,27 @@ import {
   XAxis,
   YAxis,
   ResponsiveContainer,
-} from 'recharts';
+} from "recharts";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '../Components/ui/card';
+} from "../Components/ui/card";
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from '../Components/ui/chart';
+} from "../Components/ui/chart";
 
 // --- Toggle Switch/Button ---
-const Toggle = ({ checked, onChange, labelLeft = "Numbers", labelRight = "Percentages" }) => (
+const Toggle = ({
+  checked,
+  onChange,
+  labelLeft = "Numbers",
+  labelRight = "Percentages",
+}) => (
   <div className="flex items-center gap-2">
     <span className="text-xs text-gray-600 dark:text-gray-300">{labelLeft}</span>
     <button
@@ -43,7 +48,6 @@ const Toggle = ({ checked, onChange, labelLeft = "Numbers", labelRight = "Percen
   </div>
 );
 
-// --- Legend ---
 const COLORS = {
   positive: "oklch(58.8% 0.158 241.966)",
   negative: "oklch(74.6% 0.16 232.661)",
@@ -51,33 +55,36 @@ const COLORS = {
 };
 
 const chartConfig = {
-  positive: { label: 'Positive', color: COLORS.positive },
-  neutral: { label: 'Neutral', color: COLORS.neutral },
-  negative: { label: 'Negative', color: COLORS.negative },
+  positive: { label: "Positive", color: COLORS.positive },
+  neutral: { label: "Neutral", color: COLORS.neutral },
+  negative: { label: "Negative", color: COLORS.negative },
 };
 
+// Add total count to each data row
 const withTotals = (arr) =>
   arr.map((d) => ({
     ...d,
     total: (d.positive || 0) + (d.neutral || 0) + (d.negative || 0),
   }));
 
-const toPercentages = (arr) => arr.map((d) => {
-  const total = (d.positive || 0) + (d.neutral || 0) + (d.negative || 0);
-  return {
-    platform: d.platform,
-    positive: total ? Math.round((d.positive || 0) * 1000 / total) / 10 : 0,
-    neutral: total ? Math.round((d.neutral || 0) * 1000 / total) / 10 : 0,
-    negative: total ? Math.round((d.negative || 0) * 1000 / total) / 10 : 0,
-    total: 100, // in percent view, total is always 100
-  };
-});
+// Convert counts to percentages
+const toPercentages = (arr) =>
+  arr.map((d) => {
+    const total = (d.positive || 0) + (d.neutral || 0) + (d.negative || 0);
+    return {
+      platform: d.platform,
+      positive: total ? Math.round(((d.positive || 0) * 1000) / total) / 10 : 0,
+      neutral: total ? Math.round(((d.neutral || 0) * 1000) / total) / 10 : 0,
+      negative: total ? Math.round(((d.negative || 0) * 1000) / total) / 10 : 0,
+      total: 100, // total is always 100 in percentage mode
+    };
+  });
 
 const LegendRow = () => {
   const items = [
-    { key: 'negative', label: 'Negative', color: COLORS.negative },
-    { key: 'neutral', label: 'Neutral', color: COLORS.neutral },
-    { key: 'positive', label: 'Positive', color: COLORS.positive },
+    { key: "negative", label: "Negative", color: COLORS.negative },
+    { key: "neutral", label: "Neutral", color: COLORS.neutral },
+    { key: "positive", label: "Positive", color: COLORS.positive },
   ];
   return (
     <div className="mt-3 flex items-center justify-center gap-6">
@@ -100,36 +107,45 @@ const LegendRow = () => {
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
-const PlatformBreakdown = () => {
+const PlatformBreakdown = ({ filteredData }) => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-
-  // Toggle state
   const [percentageView, setPercentageView] = useState(false);
 
-  // Datasets for both views
-  const rawData = useMemo(() => withTotals(data), [data]);
-  const percentData = useMemo(() => toPercentages(data), [data]);
+  // If filteredData exists and has data, use it; otherwise use locally fetched data
+  const dataSource = filteredData && filteredData.length > 0 ? filteredData : data;
+
+  // Transform data for both views
+  const rawData = useMemo(() => withTotals(dataSource), [dataSource]);
+  const percentData = useMemo(() => toPercentages(dataSource), [dataSource]);
   const dataset = percentageView ? percentData : rawData;
 
+  // Fetch default data only when there is no filtered data
   useEffect(() => {
+    if (filteredData && filteredData.length > 0) {
+      // Skip fetching when filtered data is present
+      return;
+    }
     async function loadData() {
       try {
         setLoading(true);
         const response = await axios.get(`${BASE_URL}/api/feedback/getplatformdata`);
         setData(response.data);
       } catch (err) {
-        setError(err.message || 'Failed to fetch data');
+        setError(err.message || "Failed to fetch data");
       } finally {
         setLoading(false);
       }
     }
     loadData();
-  }, []);
+  }, [filteredData]);
 
   if (loading) return <div>Loading Platform Data...</div>;
-  if (error) return <div className="text-red-600 dark:text-red-400">Error: {error}</div>;
+  if (error)
+    return (
+      <div className="text-red-600 dark:text-red-400">Error: {error}</div>
+    );
 
   return (
     <Card className="flex flex-col bg-white dark:bg-[#0f172a] w-150 h-120 mt-10 rounded-lg shadow-md">
@@ -138,7 +154,9 @@ const PlatformBreakdown = () => {
         <div>
           <div className="flex items-center gap-2">
             <span className="h-2.5 w-2.5 rounded-full bg-indigo-400 shadow-[0_0_10px_rgba(129,140,248,0.8)]" />
-            <CardTitle className="text-gray-900 dark:text-gray-100 text-base">Platform Breakdown</CardTitle>
+            <CardTitle className="text-gray-900 dark:text-gray-100 text-base">
+              Platform Breakdown
+            </CardTitle>
           </div>
           <CardDescription className="text-gray-700 dark:text-gray-400">
             Sentiment distribution across social platforms
@@ -150,11 +168,11 @@ const PlatformBreakdown = () => {
 
       <CardContent className="pt-2">
         <ChartContainer config={chartConfig} className="w-full pb-2">
-          <ResponsiveContainer width="100%" height={320} >
+          <ResponsiveContainer width="100%" height={320}>
             <BarChart
               data={dataset}
               stackOffset="none"
-              margin={{ top: 10, left: 10, bottom:0 }}
+              margin={{ top: 10, left: 10, bottom: 0 }}
             >
               <CartesianGrid
                 stroke="rgba(0,0,0,0.1)"
@@ -163,29 +181,28 @@ const PlatformBreakdown = () => {
               />
               <XAxis
                 dataKey="platform"
-                tick={{ fill: 'rgba(31,41,55,0.8)' }}
-                axisLine={{ stroke: 'rgba(0,0,0,0.1)' }}
+                tick={{ fill: "rgba(31,41,55,0.8)" }}
+                axisLine={{ stroke: "rgba(0,0,0,0.1)" }}
                 tickLine={false}
                 className="dark:!text-gray-300"
               />
               <YAxis
-                domain={percentageView ? [0, 100] : [0, 'auto']}
-                tick={{ fill: 'rgba(31,41,55,0.8)' }}
-                axisLine={{ stroke: 'rgba(0,0,0,0.1)' }}
+                domain={percentageView ? [0, 100] : [0, "auto"]}
+                tick={{ fill: "rgba(31,41,55,0.8)" }}
+                axisLine={{ stroke: "rgba(0,0,0,0.1)" }}
                 tickLine={false}
                 className="dark:!text-gray-300"
                 ticks={percentageView ? [0, 20, 40, 60, 80, 100] : undefined}
-                unit={percentageView ? '%' : undefined}
+                unit={percentageView ? "%" : undefined}
                 tickFormatter={percentageView ? (val) => `${val}` : undefined}
                 label={{
-                  value: percentageView ? 'Sentiment (%)' : 'Sentiment (Count)',
+                  value: percentageView ? "Sentiment (%)" : "Sentiment (Count)",
                   angle: -90,
-                  position: 'insideLeft',
+                  position: "insideLeft",
                   dx: -8,
-                  style: { textAnchor: "middle", fill: "#64748b", fontSize: "1rem" }
+                  style: { textAnchor: "middle", fill: "#64748b", fontSize: "1rem" },
                 }}
               />
-              
 
               <ChartTooltip
                 content={
@@ -193,11 +210,11 @@ const PlatformBreakdown = () => {
                     hideLabel
                     formatter={(value, name) => {
                       const label =
-                        name === 'positive'
+                        name === "positive"
                           ? chartConfig.positive.label
-                          : name === 'neutral'
-                            ? chartConfig.neutral.label
-                            : chartConfig.negative.label;
+                          : name === "neutral"
+                          ? chartConfig.neutral.label
+                          : chartConfig.negative.label;
                       return (
                         <div className="flex w-full justify-between text-gray-900 dark:text-gray-100">
                           <span>{label}</span>
@@ -220,7 +237,6 @@ const PlatformBreakdown = () => {
                 activeBar={false}
                 activeShape={null}
                 barSize={60}
-                 
               />
               <Bar
                 dataKey="neutral"
@@ -230,7 +246,6 @@ const PlatformBreakdown = () => {
                 activeBar={false}
                 activeShape={null}
                 barSize={60}
-                 
               />
               <Bar
                 dataKey="positive"
@@ -241,7 +256,6 @@ const PlatformBreakdown = () => {
                 activeBar={false}
                 activeShape={null}
                 barSize={60}
-                 
               />
             </BarChart>
           </ResponsiveContainer>
