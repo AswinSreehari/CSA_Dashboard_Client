@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { FaArrowLeft, FaArrowRight } from "react-icons/fa6";
+
 import {
   Camera,
   Battery,
@@ -9,7 +11,10 @@ import {
   LogsIcon,
 } from "lucide-react";
 
-// Map categories to icons
+// Use oklch variables as requested
+const GREEN_COLOR = "oklch(58.8% 0.158 241.966)";
+const RED_COLOR = "oklch(82.8% 0.111 230.318)";
+
 const iconMap = {
   Camera,
   Battery,
@@ -26,24 +31,23 @@ const categoryToIconKey = {
   Charging: "BatteryCharging",
   Pricing: "DollarSignIcon",
   Logs: "LogsIcon",
-  // Add more category mappings as needed
 };
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
-const TopKeywords = ({ filteredData }) => {
+const TopKeywords = ({ filteredData, sidebarOpen }) => {
   const [keywords, setKeywords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Helper to map raw data array to UI display format with icon and colors
-  const mapDataToKeywords = (dataArray) => {
-    // You can adjust this depending on the structure of filteredData or default data
-    const categoryMap = {};
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const rowsPerPage = 4;
 
+  const mapDataToKeywords = (dataArray) => {
+    const categoryMap = {};
     dataArray.forEach((item) => {
       const category = item.category || "Unknown";
-
       if (!categoryMap[category]) {
         categoryMap[category] = {
           mentions: 0,
@@ -76,11 +80,8 @@ const TopKeywords = ({ filteredData }) => {
       try {
         setLoading(true);
         setError(null);
-
-        // Only fetch default data if no filtered data provided
         if (!filteredData || filteredData.length === 0) {
           const res = await axios.get(`${BASE_URL}/api/feedback/sentiment-summary`);
-          // Map server data assuming res.data is already in the expected format
           const mapped = res.data.map((item) => {
             const title = item.category || "Unknown";
             const iconKey = categoryToIconKey[title] || "LogsIcon";
@@ -94,17 +95,16 @@ const TopKeywords = ({ filteredData }) => {
           });
           setKeywords(mapped);
         } else {
-          // Map the filteredData prop to keyword format
           const mapped = mapDataToKeywords(filteredData);
           setKeywords(mapped);
         }
+        setCurrentPage(1); // Reset to first page when data changes
       } catch (err) {
         setError(err.message || "Failed to load data");
       } finally {
         setLoading(false);
       }
     }
-
     fetchDefaultSentimentSummary();
   }, [filteredData]);
 
@@ -112,13 +112,13 @@ const TopKeywords = ({ filteredData }) => {
     return <div>Loading keywords...</div>;
   }
   if (error) {
-    return <div style={{ color: "red" }}>Error: {error}</div>;
+    return <div style={{ color: RED_COLOR }}>Error: {error}</div>;
   }
 
   if (!keywords.length) {
     return (
-      <div className="lg:col-span-2 mt-5 lg:w-170 mx-0">
-        <div className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 shadow-sm">
+      <div className={`col-span-12 mt-5 mx-0`}>
+        <div className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-[#0f172a] p-6 shadow-sm ">
           <div className="flex justify-between mb-6 flex-col ml-3">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
               <span className="inline-block h-2.5 w-2.5 rounded-full bg-indigo-400 shadow-[0_0_10px_rgba(129,140,248,0.8)] mr-2"></span>
@@ -133,9 +133,28 @@ const TopKeywords = ({ filteredData }) => {
     );
   }
 
+  const totalPages = Math.ceil(keywords.length / rowsPerPage);
+  const paginatedKeywords = keywords.slice(
+    (currentPage - 1) * rowsPerPage,
+    currentPage * rowsPerPage
+  );
+
+  const handlePrevPage = () => {
+    setCurrentPage((page) => Math.max(page - 1, 1));
+  };
+
+  const handleNextPage = () => {
+    setCurrentPage((page) => Math.min(page + 1, totalPages));
+  };
+
   return (
-    <div className="lg:col-span-2 mt-5 lg:w-170 mx-0">
-      <div className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 shadow-sm">
+    <div
+      className={`col-span-12 lg:col-span-${sidebarOpen ? 8 : 12} mt-5 mx-0 transition-all duration-300`}
+    >
+      <div
+        className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-[#0f172a] p-6 shadow-sm flex flex-col"
+        style={{ height: "480px" }}
+      >
         <div className="flex justify-between mb-6 flex-col ml-3">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
             <span className="inline-block h-2.5 w-2.5 rounded-full bg-indigo-400 shadow-[0_0_10px_rgba(129,140,248,0.8)] mr-2"></span>
@@ -146,8 +165,8 @@ const TopKeywords = ({ filteredData }) => {
           </div>
         </div>
 
-        <div className="space-y-4">
-          {keywords.map((item, i) => {
+        <div className="flex-grow overflow-y-auto space-y-4">
+          {paginatedKeywords.map((item, i) => {
             const Icon = iconMap[item.icon];
             return (
               <div
@@ -159,14 +178,13 @@ const TopKeywords = ({ filteredData }) => {
                   style={{
                     backgroundColor:
                       item.color === "green"
-                        ? "rgba(5,150,105,0.1)"
-                        : "rgba(239,68,68,0.1)",
+                        ? `${GREEN_COLOR}33`
+                        : `${RED_COLOR}33`,
                   }}
                 >
                   <Icon
-                    className={`h-4 w-4 ${
-                      item.color === "green" ? "text-green-600" : "text-red-600"
-                    }`}
+                    style={{ color: item.color === "green" ? GREEN_COLOR : RED_COLOR }}
+                    className="h-4 w-4"
                   />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -184,23 +202,55 @@ const TopKeywords = ({ filteredData }) => {
                       style={{
                         width: item.percentage,
                         backgroundColor:
-                          item.color === "green" ? "#059669" : "#ef4444",
+                          item.color === "green" ? GREEN_COLOR : RED_COLOR,
                       }}
                     />
                   </div>
                 </div>
                 <div
-                  className={`text-xs font-medium w-10 h-6 flex items-center justify-center rounded-2xl ${
-                    parseInt(item.percentage) < 50
-                      ? "bg-red-500 text-white"
-                      : "bg-green-500 text-white"
-                  }`}
+                  className="text-xs font-medium w-10 h-6 flex items-center justify-center rounded-2xl"
+                  style={{
+                    backgroundColor: item.color === "green" ? GREEN_COLOR : RED_COLOR,
+                    color: "#fff",
+                  }}
                 >
                   {item.percentage}
                 </div>
               </div>
             );
           })}
+        </div>
+
+        {/* Pagination Buttons */}
+        <div
+          className="sticky bottom-0 z-10 flex justify-center items-center space-x-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 py-4"
+          style={{ marginTop: "auto" }}
+        >
+          <button
+            onClick={handlePrevPage}
+            disabled={currentPage === 1}
+            className={`px-3 py-1 rounded-md border ${
+              currentPage === 1
+                ? "border-gray-300 text-gray-400 cursor-not-allowed"
+                : "border-sky-900 text-sky-900 hover:bg-indigo-50 cursor-pointer"
+            }`}
+          >
+            <FaArrowLeft />
+          </button>
+          <span className="text-sm text-gray-600 dark:text-gray-400">
+            Page {currentPage} of {totalPages}
+          </span>
+          <button
+            onClick={handleNextPage}
+            disabled={currentPage === totalPages}
+            className={`px-3 py-1 rounded-md border ${
+              currentPage === totalPages
+                ? "border-gray-300 text-gray-400 cursor-not-allowed"
+                : "border-sky-900 text-sky-900 cursor-pointer hover:bg-indigo-50"
+            }`}
+          >
+            <FaArrowRight />
+          </button>
         </div>
       </div>
     </div>

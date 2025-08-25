@@ -90,7 +90,7 @@ const SentimentRanking = ({ filteredData }) => {
     );
 
   return (
-    <Card className="text-gray-900 dark:text-white bg-white dark:bg-[#0f172a] shadow-md rounded-xl p-4 w-180 my-10">
+    <Card className="text-gray-900 dark:text-white bg-white dark:bg-[#0f172a] shadow-md rounded-xl p-4 w-180 my-10 h-128">
       <CardContent>
         <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center">
           <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>

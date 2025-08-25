@@ -11,6 +11,7 @@ import {
   ResponsiveContainer,
   Area,
   LabelList,
+  AreaChart,
 } from "recharts";
 import axios from "axios";
 
@@ -84,7 +85,7 @@ const MentionVolume = ({ filteredData }) => {
       </p>
 
       <ResponsiveContainer width="100%" height={320}>
-        <LineChart data={dataSource} margin={{ left: 20 }}>
+        <AreaChart data={dataSource} margin={{ left: 20 }}>
           <defs>
             <linearGradient id="colorBlue" x1="0" y1="0" x2="0" y2="1">
               <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.4} />
@@ -157,7 +158,7 @@ const MentionVolume = ({ filteredData }) => {
               offset={8}
             />
           </Line>
-        </LineChart>
+        </AreaChart>
       </ResponsiveContainer>
     </div>
   );

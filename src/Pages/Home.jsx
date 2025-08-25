@@ -2,24 +2,15 @@
 import React, { useState, useEffect, useMemo } from "react";
 import {
   Home,
-  DollarSign,
-  Monitor,
-  ShoppingCart,
-  Tag,
   BarChart3,
-  Users,
+  Database,
   ChevronDown,
   ChevronsRight,
   Moon,
   Sun,
-  TrendingUp,
-  Activity,
-  Package,
-  Bell,
+  User,
   Settings,
   HelpCircle,
-  User,
-  Database,
 } from "lucide-react";
 import TopSection from "../Components/TopSection";
 import TopKeywords from "../Components/TopKeywords";
@@ -33,20 +24,22 @@ import DashboardFilter from "../Components/Filters/DashboardFilter";
 import axios from 'axios';
 import MultiDimensionalComparison from "../Components/MultiDimentional";
 import FilterChips from "../Components/Filters/FilterChips";
+import DataSource from "../Components/DataSource";
 const BASE_URL = import.meta.env.VITE_BASE_URL;
+
 
 
 export const Example = () => {
   const [isDark, setIsDark] = useState(true);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
+  const [open, setOpen] = useState(true);
+  const [selectedMenu, setSelectedMenu] = useState("dashboard");
   const [filters, setFilters] = useState({
     dateFrom: "",
     dateTo: "",
     platform: "all",
   });
-
-
 
   useEffect(() => {
     async function importData() {
@@ -63,8 +56,6 @@ export const Example = () => {
     importData();
   }, []);
 
-
-
   useEffect(() => {
     if (isDark) {
       document.documentElement.classList.add('dark');
@@ -76,39 +67,41 @@ export const Example = () => {
   return (
     <div className={`flex min-h-screen w-full ${isDark ? 'dark' : ''}`}>
       <div className="flex w-full bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100">
-        <Sidebar />
-        <ExampleContent isDark={isDark} setIsDark={setIsDark} />
+        <Sidebar
+          selected={selectedMenu}
+          setSelected={setSelectedMenu}
+          open={open}
+          setOpen={setOpen}
+        />
+        <ExampleContent
+          isDark={isDark}
+          setIsDark={setIsDark}
+          selectedMenu={selectedMenu}
+        />
       </div>
     </div>
   );
 };
 
-const Sidebar = () => {
-  const [open, setOpen] = useState(false);
-  const [selected, setSelected] = useState("Dashboard");
+
+const Sidebar = ({ selected, setSelected, open, setOpen }) => {
+  // No local selected state anymore; use props instead
 
   return (
     <nav
       className={`sticky top-0 h-screen shrink-0 border-r transition-all duration-300 ease-in-out ${open ? 'w-64' : 'w-16'
-        } border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-2 shadow-sm`}
+        } border-gray-200 dark:border-gray-800 bg-white  dark:bg-gray-900 p-2 shadow-sm`}
     >
       <TitleSection open={open} />
 
-      <div className="space-y-1 mb-8">
+      <div className="space-y-1 mb-8 cursor-pointer">
         <Option
           Icon={Home}
           title="Dashboard"
           selected={selected}
           setSelected={setSelected}
           open={open}
-        />
-        <Option
-          Icon={BarChart3}
-          title="Analytics"
-          selected={selected}
-          setSelected={setSelected}
-          open={open}
-        />
+         />
         <Option
           Icon={Database}
           title="Data Source"
@@ -117,42 +110,11 @@ const Sidebar = () => {
           open={open}
         />
         {/* <Option
-          Icon={DollarSign}
-          title="Sales"
-          selected={selected}
-          setSelected={setSelected}
-          open={open}
-          notifs={3}
-        />
-        <Option
-          Icon={Monitor}
-          title="View Site"
-          selected={selected}
-          setSelected={setSelected}
-          open={open}
-        />
-        <Option
-          Icon={ShoppingCart}
-          title="Products"
-          selected={selected}
-          setSelected={setSelected}
-          open={open}
-        />
-       
-        <Option
           Icon={BarChart3}
           title="Analytics"
           selected={selected}
           setSelected={setSelected}
           open={open}
-        />
-        <Option
-          Icon={Users}
-          title="Members"
-          selected={selected}
-          setSelected={setSelected}
-          open={open}
-          notifs={12}
         /> */}
       </div>
 
@@ -183,16 +145,18 @@ const Sidebar = () => {
   );
 };
 
+
 const Option = ({ Icon, title, selected, setSelected, open, notifs }) => {
-  const isSelected = selected === title;
+  const isSelected = selected.toLowerCase() === title.toLowerCase();
 
   return (
     <button
-      onClick={() => setSelected(title)}
-      className={`relative flex h-11 w-full items-center rounded-md transition-all duration-200 ${isSelected
+      onClick={() => setSelected(title.toLowerCase())}
+      className={`relative flex h-11 w-full items-center rounded-md cursor-pointer transition-all duration-200 ${isSelected
         ? "bg-blue-50 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 shadow-sm border-l-2 border-blue-500"
         : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-200"
         }`}
+      type="button"
     >
       <div className="grid h-full w-12 place-content-center">
         <Icon className="h-4 w-4" />
@@ -200,7 +164,7 @@ const Option = ({ Icon, title, selected, setSelected, open, notifs }) => {
 
       {open && (
         <span
-          className={`text-sm font-medium transition-opacity duration-200 ${open ? 'opacity-100' : 'opacity-0'
+          className={`text-sm font-medium transition-opacity duration-200 ${open ? "opacity-100" : "opacity-0"
             }`}
         >
           {title}
@@ -216,6 +180,7 @@ const Option = ({ Icon, title, selected, setSelected, open, notifs }) => {
   );
 };
 
+
 const TitleSection = ({ open }) => {
   return (
     <div className="mb-6 border-b border-gray-200 dark:border-gray-800 pb-4">
@@ -229,9 +194,6 @@ const TitleSection = ({ open }) => {
                   <span className="block text-sm font-semibold text-gray-900 dark:text-gray-100">
                     Sentiment Dashboard
                   </span>
-                  {/* <span className="block text-xs text-gray-500 dark:text-gray-400">
-                    Pro Plan
-                  </span> */}
                 </div>
               </div>
             </div>
@@ -244,6 +206,7 @@ const TitleSection = ({ open }) => {
     </div>
   );
 };
+
 
 const Logo = () => {
   return (
@@ -267,6 +230,7 @@ const Logo = () => {
   );
 };
 
+
 const ToggleClose = ({ open, setOpen }) => {
   return (
     <button
@@ -282,18 +246,20 @@ const ToggleClose = ({ open, setOpen }) => {
         </div>
         {open && (
           <span
-            className={`text-sm font-medium text-gray-600 dark:text-gray-300 transition-opacity duration-200 ${open ? 'opacity-100' : 'opacity-0'
-              }`}
+            className={`text-sm font-medium cursor-pointer text-gray-600 dark:text-gray-300 transition-opacity duration-200 
+    ${open ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
           >
             Hide
           </span>
+
         )}
       </div>
     </button>
   );
 };
 
-const ExampleContent = ({ isDark, setIsDark }) => {
+
+const ExampleContent = ({ isDark, setIsDark, selectedMenu }) => {
   // Filters as object state
   const [filters, setFilters] = useState({
     dateFrom: "",
@@ -349,7 +315,7 @@ const ExampleContent = ({ isDark, setIsDark }) => {
           />
           <button
             onClick={() => setIsDark(!isDark)}
-            className="flex h-10 w-10 items-center justify-center rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
+            className="flex h-10 w-10 items-center justify-center cursor-pointer rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
           >
             {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           </button>
@@ -359,87 +325,39 @@ const ExampleContent = ({ isDark, setIsDark }) => {
         </div>
       </div>
 
-      <TopSection />
+      {selectedMenu === "dashboard" && (
+        <>
+          <TopSection />
 
-      {/* Content Grid */}
-      <div
-        className="min-w-0 grid gap-5 [grid-template-columns:repeat(auto-fit,minmax(280px,1fr))]"
-      >
-        <div className="min-w-0">
-          <TopKeywords filteredData={filteredData} />
-        </div>
-        <div className="min-w-0">
-          <SentimentDistribution filteredData={filteredData} />
-        </div>
-      </div>
-      <div className="flex gap-4">
-        <PlatformBreakdown filteredData={filteredData} />
-        <SentimentOvertime filteredData={filteredData} />
-      </div>
-      <div>
-        <MentionVolumeChart filteredData={filteredData} />
-      </div>
-      <div className="flex gap-10">
-        <SentimentRanking filteredData={filteredData} />
-        <MultiDimensionalComparison filteredData={filteredData} />
-      </div>
+          {/* Content Grid */}
+          <div className="min-w-0 grid gap-5 [grid-template-columns:repeat(auto-fit,minmax(280px,1fr))]">
+            <div className="min-w-0">
+              <TopKeywords filteredData={filteredData} />
+            </div>
+            <div className="min-w-0">
+              <SentimentDistribution filteredData={filteredData} />
+            </div>
+          </div>
+
+          <div className="flex gap-4">
+            <PlatformBreakdown filteredData={filteredData} />
+            <SentimentOvertime filteredData={filteredData} />
+          </div>
+
+          <div>
+            <MentionVolumeChart filteredData={filteredData} />
+          </div>
+
+          <div className="flex gap-10 items-start">
+            <MultiDimensionalComparison filteredData={filteredData} />
+            <SentimentRanking filteredData={filteredData} />
+          </div>
+        </>
+      )}
+
+      {selectedMenu === "data source" && <DataSource />}
     </div>
   );
 };
 
-
 export default Example;
-
-
-
-
-
-
-
-
-
-{/* Quick Stats */ }
-{/* <div className="space-y-6">
-  <div className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 shadow-sm">
-    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Quick Stats</h3>
-    <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <span className="text-sm text-gray-600 dark:text-gray-400">Conversion Rate</span>
-        <span className="text-sm font-medium text-gray-900 dark:text-gray-100">3.2%</span>
-      </div>
-      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-        <div className="bg-blue-500 h-2 rounded-full" style={{ width: '32%' }}></div>
-      </div>
-      
-      <div className="flex justify-between items-center">
-        <span className="text-sm text-gray-600 dark:text-gray-400">Bounce Rate</span>
-        <span className="text-sm font-medium text-gray-900 dark:text-gray-100">45%</span>
-      </div>
-      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-        <div className="bg-orange-500 h-2 rounded-full" style={{ width: '45%' }}></div>
-      </div>
-      
-      <div className="flex justify-between items-center">
-        <span className="text-sm text-gray-600 dark:text-gray-400">Page Views</span>
-        <span className="text-sm font-medium text-gray-900 dark:text-gray-100">8.7k</span>
-      </div>
-      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-        <div className="bg-green-500 h-2 rounded-full" style={{ width: '87%' }}></div>
-      </div>
-    </div>
-  </div>
-
-  <div className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 shadow-sm">
-    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Top Products</h3>
-    <div className="space-y-3">
-      {['iPhone 15 Pro', 'MacBook Air M2', 'AirPods Pro', 'iPad Air'].map((product, i) => (
-        <div key={i} className="flex items-center justify-between py-2">
-          <span className="text-sm text-gray-600 dark:text-gray-400">{product}</span>
-          <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
-            ${Math.floor(Math.random() * 1000 + 500)}
-          </span>
-        </div>
-      ))}
-    </div>
-  </div>
-</div> */}
