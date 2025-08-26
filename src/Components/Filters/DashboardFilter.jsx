@@ -29,27 +29,41 @@ export default function DashboardFilter({
   onFilterChange,
 }) {
   const [open, setOpen] = useState(false);
-  const [selectedPlatform, setSelectedPlatform] = useState(null);
+  // Now selectedPlatforms hold multiple selections as array
+  const [selectedPlatforms, setSelectedPlatforms] = useState([]);
   const [commandInput, setCommandInput] = useState("");
   const [data, setData] = useState(null);
   const commandInputRef = useRef(null);
 
-  // Sync local selectedPlatform state with parent's filters
+  // Sync local selectedPlatforms with parent's filters
   useEffect(() => {
-    const platformFilter = filters.find((f) => f.type === "platform");
-    setSelectedPlatform(platformFilter ? platformFilter.value : null);
+    const platformFilters = filters.filter((f) => f.type === "platform");
+    // Extract platform values
+    setSelectedPlatforms(platformFilters.map((f) => f.value));
   }, [filters]);
 
   useEffect(() => {
     async function fetchFilteredData() {
       try {
-        if (!selectedPlatform || selectedPlatform === "all") {
+        // If no filter or 'all', clear data for full dataset
+        if (
+          !selectedPlatforms.length ||
+          (selectedPlatforms.length === 1 && selectedPlatforms[0] === "all")
+        ) {
           setData(null);
           onDataChange(null);
           return;
         }
+        // Send 'platforms' as array query param
         const res = await axios.get(`${BASE_URL}/api/feedback/filterdata`, {
-          params: { platform: selectedPlatform },
+          params: { platforms: selectedPlatforms },
+          paramsSerializer: (params) => {
+            return new URLSearchParams(
+              Object.entries(params).flatMap(([k, v]) =>
+                Array.isArray(v) ? v.map((val) => [k, val]) : [[k, v]]
+              )
+            ).toString();
+          },
         });
         setData(res.data.data);
         onDataChange(res.data.data);
@@ -58,13 +72,32 @@ export default function DashboardFilter({
       }
     }
     fetchFilteredData();
-  }, [selectedPlatform, onDataChange]);
+  }, [selectedPlatforms, onDataChange]);
 
-  const onSelectPlatform = (id) => {
-    // Update parent's filters to add/update platform filter
+  // Toggle platform selection for multi-select
+  const onTogglePlatform = (id) => {
+    let newSelected;
+    if (id === "all") {
+      // Selecting "all" clears others
+      newSelected = ["all"];
+    } else {
+      if (selectedPlatforms.includes(id)) {
+        newSelected = selectedPlatforms.filter((p) => p !== id);
+        // If none selected, default to all
+        if (newSelected.length === 0) newSelected = ["all"];
+      } else {
+        newSelected = selectedPlatforms
+          .filter((p) => p !== "all")
+          .concat(id);
+      }
+    }
+
+    // Update parent's filter list
     const newFilters = filters.filter((f) => f.type !== "platform");
-    if (id !== "all") {
-      newFilters.push({ id: id, type: "platform", value: id });
+    if (!(newSelected.length === 1 && newSelected[0] === "all")) {
+      newSelected.forEach((p) =>
+        newFilters.push({ id: p, type: "platform", value: p })
+      );
     }
     onFilterChange(newFilters);
     setOpen(false);
@@ -72,19 +105,26 @@ export default function DashboardFilter({
     commandInputRef.current?.blur();
   };
 
-  const removePlatform = (e) => {
-    e.stopPropagation(); // Prevent popover toggle when clicking X
-    // Remove platform filter from parent's filters
+  // Remove a platform from selection
+  const removePlatform = (id) => {
+    const newSelected = selectedPlatforms.filter((p) => p !== id);
     const newFilters = filters.filter((f) => f.type !== "platform");
+    if (newSelected.length > 0) {
+      newSelected.forEach((p) =>
+        newFilters.push({ id: p, type: "platform", value: p })
+      );
+    } else {
+      // Reset to all if empty
+      newFilters.push({ id: "all", type: "platform", value: "all" });
+    }
     onFilterChange(newFilters);
-    setSelectedPlatform(null);
   };
 
   const getPlatformName = (id) =>
     platformOptions.find((p) => p.id === id)?.name || id;
 
   return (
-    <div className="flex flex-col items-start">
+    <div className="flex  flex-row-reverse gap-4 space-x-2">
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
@@ -92,29 +132,17 @@ export default function DashboardFilter({
             role="combobox"
             aria-expanded={open}
             size="m"
-            className="transition group h-10 w-48 text-sm items-center rounded-sm flex gap-2 px-3  "
+            className="transition group h-10 w-40 text-sm items-center rounded-sm flex gap-1 px-3 justify-between"
           >
-            {selectedPlatform && selectedPlatform !== "all" ? (
-              <>
-                <span className="font-semibold text-gray-900 dark:text-gray-100">
-                  {getPlatformName(selectedPlatform)}
-                </span>
-                <button
-                  onClick={removePlatform}
-                  className="text-gray-400 hover:text-gray-500 focus:outline-none rounded-full"
-                  aria-label="Remove"
-                  type="button"
-                  style={{ fontSize: "1.2rem", lineHeight: "1" }}
-                >
-                  x
-                </button>
-              </>
-            ) : (
-              <>
-                <ListFilter className="size-5 shrink-0 transition-all text-muted-foreground group-hover:text-primary" />
-                {"Add Filter"}
-              </>
-            )}
+            <div className="flex items-center gap-1">
+              <ListFilter className="size-5 shrink-0 transition-all text-muted-foreground group-hover:text-primary" />
+              <span>Add Filter</span>
+            </div>
+            {/* <span>
+              {selectedPlatforms.length > 0 && !selectedPlatforms.includes("all")
+                ? `${selectedPlatforms.length} selected`
+                : ""}
+            </span> */}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-[240px] p-0">
@@ -135,8 +163,18 @@ export default function DashboardFilter({
                   .map((platform) => (
                     <CommandItem
                       key={platform.id}
-                      onSelect={() => onSelectPlatform(platform.id)}
+                      onSelect={() => onTogglePlatform(platform.id)}
                     >
+                      <input
+                        type="checkbox"
+                        checked={
+                          selectedPlatforms.includes("all")
+                            ? platform.id === "all"
+                            : selectedPlatforms.includes(platform.id)
+                        }
+                        readOnly
+                        className="mr-2"
+                      />
                       {platform.name}
                     </CommandItem>
                   ))}
@@ -145,6 +183,38 @@ export default function DashboardFilter({
           </Command>
         </PopoverContent>
       </Popover>
+
+      {/* Selected platform chips */}
+      <div className="flex flex-wrap gap-2">
+        {selectedPlatforms
+          .filter((p) => p !== "all")
+          .map((platformId) => (
+            <div
+              key={platformId}
+              className="flex items-center rounded-full border border-gray-300 bg-white px-4 py-1 text-gray-800 text-base"
+              style={{
+                fontSize: "1rem",
+                fontWeight: 400,
+                boxShadow: "0 1px 2px 0 rgba(16,30,54,.02)",
+                lineHeight: 1,
+                alignSelf: "flex-start",
+              }}
+            >
+              <span className="text-gray-500">Platform</span>
+              <span className="mx-2 text-gray-300">|</span>
+              <span className="font-semibold text-gray-900">{getPlatformName(platformId)}</span>
+              <button
+                onClick={() => removePlatform(platformId)}
+                className="ml-3 text-gray-400 hover:text-gray-700 focus:outline-none rounded-full"
+                aria-label="Remove"
+                type="button"
+                style={{ fontSize: "1.2rem", lineHeight: "1" }}
+              >
+                ×
+              </button>
+            </div>
+          ))}
+      </div>
     </div>
   );
 }
