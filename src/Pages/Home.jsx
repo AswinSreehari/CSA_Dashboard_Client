@@ -11,6 +11,15 @@ import {
   User,
   Settings,
   HelpCircle,
+  Tag,
+  Smile,
+  Hash,
+  Frown,
+  Layers,
+  Box,
+  Globe,
+  FileText,
+  TrendingUp,
 } from "lucide-react";
 import TopSection from "../Components/TopSection";
 import TopKeywords from "../Components/TopKeywords";
@@ -25,7 +34,13 @@ import axios from 'axios';
 import MultiDimensionalComparison from "../Components/MultiDimentional";
 import FilterChips from "../Components/Filters/FilterChips";
 import DataSource from "../Components/DataSource";
-const BASE_URL = import.meta.env.VITE_BASE_URL;
+import TrendingModelsBarRace from "../Components/TrendingRaceModel";
+import ProductMentionsTreemap from "../Components/ProductMentionTreemap";
+import BrandComparisonChart from "../Components/BrandComparision";
+import EmotionSourceHeatmap from "../Components/EmotionSourceHeatmap";
+import NegativeEmotionsBreakdown from "../Components/NegativeEmotionBreakdown";
+import TopNegativeDriversWaterfallChart from "../Components/TopNegativeDrivers";
+ const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 
 
@@ -85,58 +100,63 @@ export const Example = () => {
 
 
 const Sidebar = ({ selected, setSelected, open, setOpen }) => {
-  // No local selected state anymore; use props instead
+  // Define sections with titles and optional icons
+  const sections = [
+    { title: "Dashboard", Icon: Home },
+    { title: "Data Source", Icon: Database },
+    // { title: "Trends", Icon: BarChart3 },  
+    { title: "Features ", Icon: Tag },  
+    { title: "Emotions", Icon: Smile },  
+    { title: "Keywords & Topics", Icon: Hash },  
+    { title: "Negative Drivers", Icon: Frown },  
+    { title: "Brand Comparison", Icon: Layers },  
+    { title: "Product Models", Icon: Box },  
+    // { title: "Geo Insights", Icon: Globe },  
+    // { title: "LLM Insights", Icon: FileText },  
+    { title: "Funnels & Engagement", Icon: TrendingUp },  
+    { title: "Reports & Exports", Icon: FileText  },  
+    { title: "Settings", Icon: Settings  },  
+   ];
 
   return (
     <nav
       className={`sticky top-0 h-screen shrink-0 border-r transition-all duration-300 ease-in-out ${open ? 'w-64' : 'w-16'
-        } border-gray-200 dark:border-gray-800 bg-white  dark:bg-gray-900 p-2 shadow-sm`}
+        } border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-2 shadow-sm`}
     >
       <TitleSection open={open} />
 
-      <div className="space-y-1 mb-8 cursor-pointer">
-        <Option
-          Icon={Home}
-          title="Dashboard"
-          selected={selected}
-          setSelected={setSelected}
-          open={open}
-         />
-        <Option
-          Icon={Database}
-          title="Data Source"
-          selected={selected}
-          setSelected={setSelected}
-          open={open}
-        />
-        {/* <Option
-          Icon={BarChart3}
-          title="Analytics"
-          selected={selected}
-          setSelected={setSelected}
-          open={open}
-        /> */}
+      <div className="space-y-1 mb-8 cursor-pointer ">
+        {sections.map(({ title, Icon }) => (
+          <Option
+            key={title}
+            Icon={Icon}
+            title={title}
+            selected={selected}
+            setSelected={setSelected}
+            open={open}
+          />
+        ))}
       </div>
 
       {open && (
-        <div className="border-t border-gray-200 dark:border-gray-800 pt-4 space-y-1 absolute bottom-20">
-          <div className="px-3 py-2 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+        <div className="border-t border-gray-200 dark:border-gray-800   space-y-1  ">
+          {/* <div className="px-3 py-2 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
             Account
-          </div>
-          <Option
+          </div> */}
+          {/* <Option
             Icon={Settings}
             title="Settings"
             selected={selected}
             setSelected={setSelected}
             open={open}
-          />
-          <Option
+          /> */}
+          {/* <Option
             Icon={HelpCircle}
             title="Help & Support"
             selected={selected}
             setSelected={setSelected}
             open={open}
-          />
+          /> */}
         </div>
       )}
 
@@ -144,6 +164,7 @@ const Sidebar = ({ selected, setSelected, open, setOpen }) => {
     </nav>
   );
 };
+
 
 
 const Option = ({ Icon, title, selected, setSelected, open, notifs }) => {
@@ -208,7 +229,7 @@ const TitleSection = ({ open }) => {
 };
 
 
-const Logo = () => {
+ const Logo = () => {
   return (
     <div className="grid size-10 shrink-0 place-content-center rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 shadow-sm">
       <svg
@@ -297,7 +318,7 @@ const ExampleContent = ({ isDark, setIsDark, selectedMenu }) => {
   return (
     <div className="flex-1 bg-gray-50 dark:bg-gray-950 p-6 overflow-auto">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between mb-8 ">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
             Dashboard
@@ -339,7 +360,7 @@ const ExampleContent = ({ isDark, setIsDark, selectedMenu }) => {
             </div>
           </div>
 
-          <div className="flex gap-4">
+          <div className="flex ">
             <PlatformBreakdown filteredData={filteredData} />
             <SentimentOvertime filteredData={filteredData} />
           </div>
@@ -348,9 +369,43 @@ const ExampleContent = ({ isDark, setIsDark, selectedMenu }) => {
             <MentionVolumeChart filteredData={filteredData} />
           </div>
 
-          <div className="flex gap-10 items-start">
+          <div className="flex gap-5 items-start">
             <MultiDimensionalComparison filteredData={filteredData} />
             <SentimentRanking filteredData={filteredData} />
+          </div>
+
+          <div className="min-w-0 grid gap-5  [grid-template-columns:repeat(auto-fit,minmax(280px,1fr))]">
+            <div className="min-w-0 ">
+              < TrendingModelsBarRace filteredData={filteredData} />
+            </div>
+            <div className="min-w-0">
+              <ProductMentionsTreemap filteredData={filteredData} />
+             </div>
+          </div>
+
+          <div className="min-w-0 grid gap-5  [grid-template-columns:repeat(auto-fit,minmax(280px,1fr))]">
+            <div className="min-w-0 ">
+              <EmotionSourceHeatmap filteredData={filteredData} />
+             </div>
+            <div className="min-w-0  ">
+              <BrandComparisonChart filteredData={filteredData} />
+              </div>
+          </div>
+
+          <div className="min-w-0 grid gap-5  [grid-template-columns:repeat(auto-fit,minmax(280px,1fr))]">
+            <div className="min-w-0 ">
+              <NegativeEmotionsBreakdown filteredData={filteredData} />
+             </div>
+            <div className="min-w-0  ">
+              <TopNegativeDriversWaterfallChart filteredData={filteredData} />
+               </div>
+          </div>
+
+          <div className="min-w-0 grid gap-5  [grid-template-columns:repeat(auto-fit,minmax(280px,1fr))]">
+            <div className="min-w-0 ">
+              </div>
+            <div className="min-w-0  ">
+                </div>
           </div>
         </>
       )}

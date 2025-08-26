@@ -1,4 +1,6 @@
-import React, { useEffect, useState, useMemo } from "react";
+"use client";
+
+import React, { useState, useEffect, useMemo } from "react";
 import axios from "axios";
 import {
   Bar,
@@ -7,6 +9,8 @@ import {
   XAxis,
   YAxis,
   ResponsiveContainer,
+  Tooltip,
+  Legend,
 } from "recharts";
 import {
   Card,
@@ -21,8 +25,7 @@ import {
   ChartTooltipContent,
 } from "../Components/ui/chart";
 
-// --- Toggle Switch/Button ---
-const Toggle = ({
+ const Toggle = ({
   checked,
   onChange,
   labelLeft = "Numbers",
@@ -80,6 +83,29 @@ const toPercentages = (arr) =>
     };
   });
 
+// Aggregate filteredData into chart-friendly structure
+const aggregateFilteredData = (filteredData) => {
+  const map = {};
+  filteredData.forEach(({ platform, sentiment }) => {
+    if (!platform) return; // skip if no platform
+    if (!map[platform]) map[platform] = { positive: 0, neutral: 0, negative: 0 };
+
+    const label = sentiment?.label || "neutral";
+    if (label === "positive") {
+      map[platform].positive += 1;
+    } else if (label === "negative" || label === "very negative") {
+      map[platform].negative += 1;
+    } else {
+      map[platform].neutral += 1;
+    }
+  });
+
+  return Object.entries(map).map(([platform, counts]) => ({
+    platform,
+    ...counts,
+  }));
+};
+
 const LegendRow = () => {
   const items = [
     { key: "negative", label: "Negative", color: COLORS.negative },
@@ -113,23 +139,24 @@ const PlatformBreakdown = ({ filteredData }) => {
   const [error, setError] = useState(null);
   const [percentageView, setPercentageView] = useState(false);
 
-  // If filteredData exists and has data, use it; otherwise use locally fetched data
-  const dataSource = filteredData && filteredData.length > 0 ? filteredData : data;
+  console.log("FIlteredDataa-->",filteredData)
 
-  // Transform data for both views
-  const rawData = useMemo(() => withTotals(dataSource), [dataSource]);
-  const percentData = useMemo(() => toPercentages(dataSource), [dataSource]);
+  const dataSource = filteredData && filteredData.length > 0 ? aggregateFilteredData(filteredData) : data;
+
+  const rawData = withTotals(dataSource);
+  const percentData = toPercentages(dataSource);
   const dataset = percentageView ? percentData : rawData;
 
-  // Fetch default data only when there is no filtered data
   useEffect(() => {
     if (filteredData && filteredData.length > 0) {
-      // Skip fetching when filtered data is present
-      return;
+      setLoading(false);
+      setError(null);
+      return; // no fetch when filtered data present
     }
     async function loadData() {
       try {
         setLoading(true);
+        setError(null);
         const response = await axios.get(`${BASE_URL}/api/feedback/getplatformdata`);
         setData(response.data);
       } catch (err) {
@@ -142,10 +169,7 @@ const PlatformBreakdown = ({ filteredData }) => {
   }, [filteredData]);
 
   if (loading) return <div>Loading Platform Data...</div>;
-  if (error)
-    return (
-      <div className="text-red-600 dark:text-red-400">Error: {error}</div>
-    );
+  if (error) return <div className="text-red-600 dark:text-red-400">Error: {error}</div>;
 
   return (
     <Card className="flex flex-col bg-white dark:bg-[#0f172a] w-150 h-120 mt-10 rounded-lg shadow-md">
@@ -169,16 +193,8 @@ const PlatformBreakdown = ({ filteredData }) => {
       <CardContent className="pt-2">
         <ChartContainer config={chartConfig} className="w-full pb-2">
           <ResponsiveContainer width="100%" height={320}>
-            <BarChart
-              data={dataset}
-              stackOffset="none"
-              margin={{ top: 10, left: 10, bottom: 0 }}
-            >
-              <CartesianGrid
-                stroke="rgba(0,0,0,0.1)"
-                strokeDasharray="4 6"
-                vertical={false}
-              />
+            <BarChart data={dataset} stackOffset="none" margin={{ top: 10, left: 10, bottom: 0 }}>
+              <CartesianGrid stroke="rgba(0,0,0,0.1)" strokeDasharray="4 6" vertical={false} />
               <XAxis
                 dataKey="platform"
                 tick={{ fill: "rgba(31,41,55,0.8)" }}
@@ -218,9 +234,7 @@ const PlatformBreakdown = ({ filteredData }) => {
                       return (
                         <div className="flex w-full justify-between text-gray-900 dark:text-gray-100">
                           <span>{label}</span>
-                          <span className="font-mono">
-                            {percentageView ? `${value}%` : value}
-                          </span>
+                          <span className="font-mono">{percentageView ? `${value}%` : value}</span>
                         </div>
                       );
                     }}

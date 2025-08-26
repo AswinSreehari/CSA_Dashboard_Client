@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useMemo, useState, useEffect } from "react";
-import { Pie, PieChart, Cell, Sector } from "recharts";
+import { Pie, PieChart, Cell, Sector, ResponsiveContainer } from "recharts";
 import {
   Card,
   CardContent,
@@ -253,6 +253,7 @@ const SentimentDistribution = ({ filteredData }) => {
             config={{ visitors: { label: "Mentions" } }}
             className="[&_.recharts-pie-label-text]:fill-foreground mx-auto aspect-square w-[440px] max-w-full mt-0 pb-0"
           >
+            <ResponsiveContainer width="100%" height={400}>
             <PieChart width={400} height={400}>
               {/* Centered label */}
               <text
@@ -356,6 +357,8 @@ const SentimentDistribution = ({ filteredData }) => {
                 </Pie>
               )}
             </PieChart>
+            </ResponsiveContainer>
+
           </ChartContainer>
         </CardContent>
       </Card>

@@ -16,6 +16,9 @@ const platformOptions = [
   { id: "twitter", name: "Twitter" },
   { id: "facebook", name: "Facebook" },
   { id: "instagram", name: "Instagram" },
+  { id: "crm", name: "Crm" },
+  { id: "flipkart", name: "Flipkart" },
+  { id: "reddit", name: "Reddit" },
 ];
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
@@ -69,7 +72,8 @@ export default function DashboardFilter({
     commandInputRef.current?.blur();
   };
 
-  const removePlatform = () => {
+  const removePlatform = (e) => {
+    e.stopPropagation(); // Prevent popover toggle when clicking X
     // Remove platform filter from parent's filters
     const newFilters = filters.filter((f) => f.type !== "platform");
     onFilterChange(newFilters);
@@ -87,18 +91,37 @@ export default function DashboardFilter({
             variant="ghost"
             role="combobox"
             aria-expanded={open}
-            size="sm"
-            className="transition group h-6 text-xs items-center rounded-sm flex gap-1.5"
+            size="m"
+            className="transition group h-10 w-48 text-sm items-center rounded-sm flex gap-2 px-3  "
           >
-            <ListFilter className="size-3 shrink-0 transition-all text-muted-foreground group-hover:text-primary" />
-            {"Add Filter"}
+            {selectedPlatform && selectedPlatform !== "all" ? (
+              <>
+                <span className="font-semibold text-gray-900 dark:text-gray-100">
+                  {getPlatformName(selectedPlatform)}
+                </span>
+                <button
+                  onClick={removePlatform}
+                  className="text-gray-400 hover:text-gray-500 focus:outline-none rounded-full"
+                  aria-label="Remove"
+                  type="button"
+                  style={{ fontSize: "1.2rem", lineHeight: "1" }}
+                >
+                  x
+                </button>
+              </>
+            ) : (
+              <>
+                <ListFilter className="size-5 shrink-0 transition-all text-muted-foreground group-hover:text-primary" />
+                {"Add Filter"}
+              </>
+            )}
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-[220px] p-0">
+        <PopoverContent className="w-[240px] p-0">
           <Command>
             <CommandInput
               placeholder="Search platform..."
-              className="h-9"
+              className="h-10 text-sm"
               value={commandInput}
               onInputCapture={(e) => setCommandInput(e.currentTarget.value)}
               ref={commandInputRef}
@@ -122,33 +145,6 @@ export default function DashboardFilter({
           </Command>
         </PopoverContent>
       </Popover>
-
-      {/* Capsule Chip for Selected Platform */}
-      {selectedPlatform && selectedPlatform !== "all" && (
-        <div
-          className="flex items-center mt-2 rounded-full border border-gray-300 bg-white px-3 py-1 text-gray-800 text-base"
-          style={{
-            fontSize: "1rem",
-            fontWeight: 400,
-            boxShadow: "0 1px 2px 0 rgba(16,30,54,.02)",
-          }}
-        >
-          <span className="text-gray-500">Platform</span>
-          <span className="mx-1 text-gray-300">|</span>
-          <span className="font-semibold text-gray-900">
-            {getPlatformName(selectedPlatform)}
-          </span>
-          <button
-            onClick={removePlatform}
-            className="ml-2 text-gray-400 hover:text-gray-700 focus:outline-none rounded-full"
-            aria-label="Remove"
-            type="button"
-            style={{ marginLeft: 8, fontSize: "1.1rem", lineHeight: "1" }}
-          >
-            ×
-          </button>
-        </div>
-      )}
     </div>
   );
 }

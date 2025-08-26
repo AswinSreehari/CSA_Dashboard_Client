@@ -6,10 +6,13 @@ import { Progress } from "../Components/ui/progress";
 import axios from "axios";
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
+const ROWS_PER_PAGE = 4;
+
 const SentimentRanking = ({ filteredData }) => {
   const [data, setData] = useState({ rankings: [] });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [page, setPage] = useState(1);
 
   // Aggregate filteredData into rankings format using `model` as brand name
   const aggregateFilteredData = (rawData) => {
@@ -42,10 +45,10 @@ const SentimentRanking = ({ filteredData }) => {
           brand: b.brand,
           mentions: b.mentions,
           sentiment_percent: sentimentPercent,
-          delta_positive: 0, // optionally calculated with historical data
+          delta_positive: 0,
           delta_negative: 0,
-          market_share: "N/A", // optionally set if available
-          is_your_brand: false, // set according to your app logic
+          market_share: "N/A",
+          is_your_brand: false,
         };
       })
       .sort((a, b) => b.sentiment_percent - a.sentiment_percent)
@@ -62,6 +65,7 @@ const SentimentRanking = ({ filteredData }) => {
     async function fetchRanking() {
       if (filteredData && filteredData.length > 0) {
         setData(aggregateFilteredData(filteredData));
+        setPage(1); // reset page on filtered data change
         setLoading(false);
         setError(null);
         return;
@@ -74,6 +78,7 @@ const SentimentRanking = ({ filteredData }) => {
           `${BASE_URL}/api/feedback/sentiment-ranking`
         );
         setData(response.data);
+        setPage(1);
       } catch (err) {
         setError(err.message || "Failed to fetch ranking data");
       } finally {
@@ -83,6 +88,21 @@ const SentimentRanking = ({ filteredData }) => {
     fetchRanking();
   }, [filteredData]);
 
+  // Pagination slice
+  const totalPages = Math.ceil(data.rankings.length / ROWS_PER_PAGE);
+  const pagedRankings = data.rankings.slice(
+    (page - 1) * ROWS_PER_PAGE,
+    page * ROWS_PER_PAGE
+  );
+
+  const handlePrev = () => {
+    setPage((p) => Math.max(p - 1, 1));
+  };
+
+  const handleNext = () => {
+    setPage((p) => Math.min(p + 1, totalPages));
+  };
+
   if (loading) return <div>Loading sentiment rankings...</div>;
   if (error)
     return (
@@ -90,18 +110,18 @@ const SentimentRanking = ({ filteredData }) => {
     );
 
   return (
-    <Card className="text-gray-900 dark:text-white bg-white dark:bg-[#0f172a] shadow-md rounded-xl p-4 w-180 my-10 h-128">
-      <CardContent>
-        <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center">
+    <Card className="text-gray-900 dark:text-white bg-white dark:bg-[#0f172a] shadow-md rounded-xl p-4 w-180 my-10 h-128 flex flex-col">
+      <CardContent className="flex-1">
+        <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center mb-2">
           <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
           Sentiment Rankings
         </h2>
-        <p className="text-xs text-gray-600 dark:text-gray-400 mb-4">
+        <p className="text-xs text-gray-600 dark:text-gray-400 mb-6">
           How Google Pixel compares to major competitors
         </p>
 
         <div className="space-y-4">
-          {data.rankings.map((item) => (
+          {pagedRankings.map((item) => (
             <div
               key={item.rank}
               className={`p-3 rounded-lg flex items-center justify-between ${
@@ -142,7 +162,7 @@ const SentimentRanking = ({ filteredData }) => {
                   </span>
                 </div>
                 <span className="text-lg font-bold leading-none whitespace-nowrap text-gray-900 dark:text-gray-100">
-                  {item.sentiment_percent}%
+                  {item.sentiment_percent}
                 </span>
                 <Progress
                   value={parseFloat(item.sentiment_percent)}
@@ -153,6 +173,26 @@ const SentimentRanking = ({ filteredData }) => {
           ))}
         </div>
       </CardContent>
+      {/* Pagination controls */}
+      <div className="flex justify-between mt-4 px-2">
+        <button
+          onClick={handlePrev}
+          disabled={page === 1}
+          className="px-3 py-1 rounded bg-blue-500 text-white disabled:bg-gray-300 disabled:cursor-not-allowed"
+        >
+          Previous
+        </button>
+        <span className="text-sm text-gray-700 dark:text-gray-300">
+          Page {page} of {totalPages || 1}
+        </span>
+        <button
+          onClick={handleNext}
+          disabled={page === totalPages || totalPages === 0}
+          className="px-3 py-1 rounded bg-blue-500 text-white disabled:bg-gray-300 disabled:cursor-not-allowed"
+        >
+          Next
+        </button>
+      </div>
     </Card>
   );
 };

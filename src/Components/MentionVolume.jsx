@@ -28,7 +28,7 @@ const MentionVolume = ({ filteredData }) => {
 
     const agg = {};
     filteredData.forEach((item) => {
-      const dateStr = item.date ? item.date.slice(0, 10) : "Unknown"; // format YYYY-MM-DD
+      const dateStr = item.date ? item.date.slice(0, 10) : "Unknown"; 
       if (!agg[dateStr]) {
         agg[dateStr] = { created_at: dateStr, mention_count: 0 };
       }
@@ -67,7 +67,7 @@ const MentionVolume = ({ filteredData }) => {
 
   const maxY =
     dataSource.length > 0 ? Math.max(...dataSource.map((d) => d.mention_count)) : 0;
-  const top = maxY + 200;
+  const top = maxY + 50;
 
   if (loading) return <div>Loading mention volume...</div>;
   if (error)
