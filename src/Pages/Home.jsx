@@ -20,6 +20,7 @@ import {
   Globe,
   FileText,
   TrendingUp,
+  Timer,
 } from "lucide-react";
 import TopSection from "../Components/TopSection";
 import TopKeywords from "../Components/TopKeywords";
@@ -40,7 +41,7 @@ import BrandComparisonChart from "../Components/BrandComparision";
 import EmotionSourceHeatmap from "../Components/EmotionSourceHeatmap";
 import NegativeEmotionsBreakdown from "../Components/NegativeEmotionBreakdown";
 import TopNegativeDriversWaterfallChart from "../Components/TopNegativeDrivers";
- const BASE_URL = import.meta.env.VITE_BASE_URL;
+const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 
 
@@ -105,18 +106,18 @@ const Sidebar = ({ selected, setSelected, open, setOpen }) => {
     { title: "Dashboard", Icon: Home },
     { title: "Data Source", Icon: Database },
     // { title: "Trends", Icon: BarChart3 },  
-    // { title: "Features", Icon: Tag },  
-    { title: "Emotions", Icon: Smile },  
-    { title: "Keywords & Topics", Icon: Hash },  
-    { title: "Negative Drivers", Icon: Frown },  
-    { title: "Brand Comparison", Icon: Layers },  
-    { title: "Product Models", Icon: Box },  
+    { title: "Mention Overtime", Icon: Timer },
+    { title: "Emotions", Icon: Smile },
+    { title: "Keywords & Topics", Icon: Hash },
+    { title: "Negative Drivers", Icon: Frown },
+    { title: "Brand Comparison", Icon: Layers },
+    { title: "Product Models", Icon: Box },
     // { title: "Geo Insights", Icon: Globe },  
     // { title: "LLM Insights", Icon: FileText },  
-    { title: "Funnels & Engagement", Icon: TrendingUp },  
-    { title: "Reports & Exports", Icon: FileText  },  
-    { title: "Settings", Icon: Settings  },  
-   ];
+    { title: "Funnels & Engagement", Icon: TrendingUp },
+    { title: "Reports & Exports", Icon: FileText },
+    { title: "Settings", Icon: Settings },
+  ];
 
   return (
     <nav
@@ -229,7 +230,7 @@ const TitleSection = ({ open }) => {
 };
 
 
- const Logo = () => {
+const Logo = () => {
   return (
     <div className="grid size-10 shrink-0 place-content-center rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 shadow-sm">
       <svg
@@ -380,95 +381,86 @@ const ExampleContent = ({ isDark, setIsDark, selectedMenu }) => {
             </div>
             <div className="min-w-0">
               <ProductMentionsTreemap filteredData={filteredData} />
-             </div>
+            </div>
           </div>
 
           <div className="min-w-0 grid gap-5  [grid-template-columns:repeat(auto-fit,minmax(280px,1fr))]">
             <div className="min-w-0 mt-0 ">
               <EmotionSourceHeatmap filteredData={filteredData} />
-             </div>
+            </div>
             <div className="min-w-0  ">
               <BrandComparisonChart filteredData={filteredData} />
-              </div>
+            </div>
           </div>
 
           <div className="min-w-0 grid gap-5  [grid-template-columns:repeat(auto-fit,minmax(280px,1fr))]">
             <div className="min-w-0 ">
               <NegativeEmotionsBreakdown filteredData={filteredData} />
-             </div>
+            </div>
             <div className="min-w-0  ">
               <TopNegativeDriversWaterfallChart filteredData={filteredData} />
-               </div>
+            </div>
           </div>
 
-           
+
         </>
       )}
 
       {selectedMenu === "data source" && <DataSource />}
-      {/* {selectedMenu === "features" && 
-       
-       <div className="min-w-0 grid gap-5  [grid-template-columns:repeat(auto-fit,minmax(280px,1fr))]">
-            <div className="min-w-0 ">
-       <TopKeywords />
-             </div>
-            <div className="min-w-0  ">
-      <MultiDimensionalComparison/>
-               </div>
-          </div>
-    } */}
 
-          {selectedMenu === "emotions" && 
-          <div className="min-w-0 grid gap-5  [grid-template-columns:repeat(auto-fit,minmax(280px,1fr))]">
-            <div className="min-w-0 ">
-       <SentimentDistribution />
-             </div>
-            <div className="min-w-0  ">
-              <NegativeEmotionsBreakdown />
-                </div>
+      {selectedMenu === "emotions" &&
+        <div className="min-w-0 grid gap-5  [grid-template-columns:repeat(auto-fit,minmax(280px,1fr))]">
+          <div className="min-w-0 ">
+            <SentimentDistribution />
           </div>
-          }
+          <div className="min-w-0  ">
+            <NegativeEmotionsBreakdown />
+          </div>
+        </div>
+      }
 
-          {selectedMenu === "negative drivers" && 
-          <div className="min-w-0 grid gap-5  [grid-template-columns:repeat(auto-fit,minmax(280px,1fr))]">
-            <div className="min-w-0 ">
-       <TopNegativeDriversWaterfallChart />
-             </div>
-            <div className="min-w-0  ">
-                 </div>
+      {selectedMenu === "negative drivers" &&
+        <div className="min-w-0 grid gap-5  [grid-template-columns:repeat(auto-fit,minmax(280px,1fr))]">
+          <div className="min-w-0 ">
+            <TopNegativeDriversWaterfallChart />
           </div>
-          }
+          <div className="min-w-0  ">
+          </div>
+        </div>
+      }
 
-          {selectedMenu === "keywords & topics" && 
-          <div className="min-w-0 grid gap-5  [grid-template-columns:repeat(auto-fit,minmax(280px,1fr))]">
-            <div className="min-w-0 ">
-       <TopKeywords />
-             </div>
-            <div className="min-w-0  ">
-              <MultiDimensionalComparison />
-                 </div>
+      {selectedMenu === "keywords & topics" &&
+        <div className="min-w-0 grid gap-5  [grid-template-columns:repeat(auto-fit,minmax(280px,1fr))]">
+          <div className="min-w-0 ">
+            <TopKeywords />
           </div>
-          }
+          <div className="min-w-0  ">
+            <MultiDimensionalComparison />
+          </div>
+        </div>
+      }
 
-          {selectedMenu === "brand comparison" && 
-          <div className="min-w-0 grid gap-5  [grid-template-columns:repeat(auto-fit,minmax(280px,1fr))]">
-            <div className="min-w-0 ">
-       <BrandComparisonChart />
-             </div>
-            <div className="min-w-0  ">
-                 </div>
-          </div>
-          }
+      {selectedMenu === "mention overtime" && <MentionVolumeChart /> }
 
-          {selectedMenu === "product models" && 
-          <div className="min-w-0 grid gap-5  [grid-template-columns:repeat(auto-fit,minmax(280px,1fr))]">
-            <div className="min-w-0 ">
-       <ProductMentionsTreemap />
-             </div>
-            <div className="min-w-0  ">
-                 </div> 
+      {selectedMenu === "brand comparison" &&
+        <div className="min-w-0 grid gap-5  [grid-template-columns:repeat(auto-fit,minmax(280px,1fr))]">
+          <div className="min-w-0 ">
+            <BrandComparisonChart />
           </div>
-          }
+          <div className="min-w-0  ">
+          </div>
+        </div>
+      }
+
+      {selectedMenu === "product models" &&
+        <div className="min-w-0 grid gap-5  [grid-template-columns:repeat(auto-fit,minmax(280px,1fr))]">
+          <div className="min-w-0 ">
+            <ProductMentionsTreemap />
+          </div>
+          <div className="min-w-0  ">
+          </div>
+        </div>
+      }
 
 
     </div>
