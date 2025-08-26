@@ -152,8 +152,8 @@ const TopKeywords = ({ filteredData, sidebarOpen }) => {
       className={`col-span-12 lg:col-span-${sidebarOpen ? 8 : 12} mt-5 mx-0 transition-all duration-300`}
     >
       <div
-        className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-[#0f172a] p-6 shadow-sm flex flex-col"
-        style={{ height: "480px" }}
+        className="rounded-xl border border-gray-200 h-130 dark:border-gray-800 bg-white dark:bg-[#0f172a] p-6 shadow-sm flex flex-col"
+         
       >
         <div className="flex justify-between mb-6 flex-col ml-3">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
@@ -229,11 +229,10 @@ const TopKeywords = ({ filteredData, sidebarOpen }) => {
           <button
             onClick={handlePrevPage}
             disabled={currentPage === 1}
-            className={`px-3 py-1 rounded-md border ${
-              currentPage === 1
+            className={`px-3 py-1 rounded-md border ${currentPage === 1
                 ? "border-gray-300 text-gray-400 cursor-not-allowed"
                 : "border-sky-900 text-sky-900 hover:bg-indigo-50 cursor-pointer"
-            }`}
+              }`}
           >
             <FaArrowLeft />
           </button>
@@ -243,11 +242,10 @@ const TopKeywords = ({ filteredData, sidebarOpen }) => {
           <button
             onClick={handleNextPage}
             disabled={currentPage === totalPages}
-            className={`px-3 py-1 rounded-md border ${
-              currentPage === totalPages
+            className={`px-3 py-1 rounded-md border ${currentPage === totalPages
                 ? "border-gray-300 text-gray-400 cursor-not-allowed"
                 : "border-sky-900 text-sky-900 cursor-pointer hover:bg-indigo-50"
-            }`}
+              }`}
           >
             <FaArrowRight />
           </button>

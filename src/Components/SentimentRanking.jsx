@@ -4,6 +4,8 @@ import React, { useEffect, useState } from "react";
 import { Card, CardContent } from "../Components/ui/card";
 import { Progress } from "../Components/ui/progress";
 import axios from "axios";
+import { FaArrowLeft, FaArrowRight } from "react-icons/fa6";
+
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 const ROWS_PER_PAGE = 4;
@@ -110,7 +112,7 @@ const SentimentRanking = ({ filteredData }) => {
     );
 
   return (
-    <Card className="text-gray-900 dark:text-white bg-white dark:bg-[#0f172a] shadow-md rounded-xl p-4 w-180 my-10 h-128 flex flex-col">
+    <Card className="text-gray-900 dark:text-white bg-white dark:bg-[#0f172a] shadow-md rounded-xl p-4 w-180 my-5 h-128 flex flex-col">
       <CardContent className="flex-1">
         <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center mb-2">
           <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
@@ -124,11 +126,10 @@ const SentimentRanking = ({ filteredData }) => {
           {pagedRankings.map((item) => (
             <div
               key={item.rank}
-              className={`p-3 rounded-lg flex items-center justify-between ${
-                item.is_your_brand
+              className={`p-3 rounded-lg flex items-center justify-between ${item.is_your_brand
                   ? "bg-blue-100 dark:bg-blue-900"
                   : "bg-gray-100 dark:bg-[#1e293b]"
-              }`}
+                }`}
             >
               {/* Left section */}
               <div>
@@ -174,23 +175,29 @@ const SentimentRanking = ({ filteredData }) => {
         </div>
       </CardContent>
       {/* Pagination controls */}
-      <div className="flex justify-between mt-4 px-2">
+      <div className="flex justify-center gap-4 mt-4 px-2">
         <button
           onClick={handlePrev}
           disabled={page === 1}
-          className="px-3 py-1 rounded bg-blue-500 text-white disabled:bg-gray-300 disabled:cursor-not-allowed"
+          className={`px-3 py-1 rounded-md border ${page === 1
+            ? "border-gray-300 text-gray-400 cursor-not-allowed"
+            : "border-sky-900 text-sky-900 hover:bg-indigo-50 cursor-pointer"
+            }`}
         >
-          Previous
+          <FaArrowLeft />
         </button>
-        <span className="text-sm text-gray-700 dark:text-gray-300">
+        <span className="text-sm text-gray-600 dark:text-gray-400">
           Page {page} of {totalPages || 1}
         </span>
         <button
           onClick={handleNext}
           disabled={page === totalPages || totalPages === 0}
-          className="px-3 py-1 rounded bg-blue-500 text-white disabled:bg-gray-300 disabled:cursor-not-allowed"
+          className={`px-3 py-1 rounded-md border ${page === totalPages
+            ? "border-gray-300 text-gray-400 cursor-not-allowed"
+            : "border-sky-900 text-sky-900 cursor-pointer hover:bg-indigo-50"
+            }`}
         >
-          Next
+          <FaArrowRight />
         </button>
       </div>
     </Card>

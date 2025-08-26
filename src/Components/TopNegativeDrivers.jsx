@@ -180,7 +180,7 @@ const TopNegativeDriversWaterfallChart = ({ filteredData }) => {
   if (error) return <div className="text-red-600 dark:text-red-400">{error}</div>;
 
   return (
-    <Card className="lg:col-span-2 flex flex-col mt-10 w-full h-130 bg-white dark:bg-[#0f172a] rounded-lg shadow-md">
+    <Card className="lg:col-span-2 flex flex-col mt-5 w-full h-130 bg-white dark:bg-[#0f172a] rounded-lg shadow-md">
       <CardHeader className="px-4 pt-4 pb-1">
         <CardTitle className="text-gray-900 dark:text-gray-100 text-base font-semibold">
           Top Negative Drivers

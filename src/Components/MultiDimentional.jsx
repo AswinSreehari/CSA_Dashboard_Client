@@ -127,7 +127,7 @@ const MultiDimensionalComparison = ({ filteredData }) => {
     );
 
   return (
-    <Card className="bg-white dark:bg-[#0f172a] w-180 mt-10 rounded-lg p-6 ">
+    <Card className="bg-white dark:bg-[#0f172a] w-180 mt-5 rounded-lg p-6 ">
       <CardHeader>
         <CardTitle className="text-gray-900 dark:text-gray-100 flex items-center gap-2">
           <span className="inline-block h-2.5 w-2.5 rounded-full bg-indigo-400 shadow-[0_0_10px_rgba(129,140,248,0.8)]"></span>

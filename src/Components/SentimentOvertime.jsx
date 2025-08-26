@@ -129,7 +129,7 @@ const SentimentOvertime = ({ filteredData }) => {
 
           Sentiment Over Time
         </h2>
-        <div className="flex gap-3 mb-4 ">
+        <div className="flex gap-3  ">
           <button onClick={() => setShowData(!showData)} className="bg-gray-200 cursor-pointer dark:bg-gray-700 rounded px-3 py-1 hover:bg-gray-300 dark:hover:bg-gray-600">{showData ? <IoBarChartOutline size={20} /> : <BsClipboard2Data size={20} /> }</button>
           <button onClick={downloadCSV} className="bg-gray-200 cursor-pointer dark:bg-gray-700 rounded px-3 py-1 hover:bg-gray-300 dark:hover:bg-gray-600"><FaFileDownload size={20} /></button>
           <button onClick={shareChart} className="bg-gray-200 cursor-pointer dark:bg-gray-700 rounded px-3 py-1 hover:bg-gray-300 dark:hover:bg-gray-600"><FaShare size={20} /></button>
@@ -137,7 +137,7 @@ const SentimentOvertime = ({ filteredData }) => {
 
 
       </div>
-      <p className="mb-6 text-sm text-gray-600 dark:text-gray-400">
+      <p className="mb-6 mt-0 text-sm text-gray-600 dark:text-gray-400">
         Track sentiment changes for Google Pixel mentions
       </p>
 

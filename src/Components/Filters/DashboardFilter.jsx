@@ -64,7 +64,7 @@ export default function DashboardFilter({
       {/* Selected platform chip */}
       {selectedPlatform && selectedPlatform !== "all" && (
         <div
-          className="flex items-center rounded-full border border-gray-300 bg-white px-4 py-1 text-gray-800 text-base"
+          className="flex items-center rounded-full border border-gray-300 bg-white dark:bg-[#0f172a] dark:text-neutral-200 px-4 py-1 text-gray-800 text-base"
           style={{
             fontSize: "1rem",
             fontWeight: 400,
@@ -72,9 +72,8 @@ export default function DashboardFilter({
             lineHeight: "1",
           }}
         >
-          <span className="text-gray-500">Platform</span>
-          <span className="mx-2 text-gray-300">|</span>
-          <span className="font-semibold text-gray-900">{getPlatformName(selectedPlatform)}</span>
+          
+          <span className="font-semibold text-gray-900  dark:text-neutral-200">{getPlatformName(selectedPlatform)}</span>
           <button
             onClick={removePlatform}
             className="ml-3 text-gray-400 hover:text-gray-700 focus:outline-none rounded-full"

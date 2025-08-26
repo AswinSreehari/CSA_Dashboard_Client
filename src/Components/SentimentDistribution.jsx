@@ -200,7 +200,7 @@ const SentimentDistribution = ({ filteredData }) => {
 
   return (
     <div>
-      <Card className="lg:col-span-2 flex flex-col mt-5 w-full h-120 
+      <Card className="lg:col-span-2 flex flex-col mt-5 w-full h-130 
         bg-white dark:bg-[#0f172a] rounded-lg relative overflow-visible
         border border-gray-100 dark:border-slate-700">
         {/* Legend in top-right */}
