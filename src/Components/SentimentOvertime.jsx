@@ -1,11 +1,6 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import { BsClipboard2Data } from "react-icons/bs";
-import { IoBarChartOutline } from "react-icons/io5";
-import { FaFileDownload } from "react-icons/fa";
-import { FaShare } from "react-icons/fa";
-
 import {
   AreaChart,
   Area,
@@ -19,22 +14,23 @@ import {
 import axios from "axios";
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 import html2canvas from "html2canvas";
+import DetailsModal from "./DetailsModal";
 
 
 const SentimentOvertime = ({ filteredData }) => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+    const [modalOpen, setModalOpen] = useState(false);
   const [showData, setShowData] = useState(false);
   const chartRef = useRef(null);
 
   useEffect(() => {
     async function fetchSentimentOverTime() {
-      // If filteredData is present and non-empty, skip fetching default data
-      if (filteredData && filteredData.length > 0) {
+       if (filteredData && filteredData.length > 0) {
         const aggData = {};
         filteredData.forEach((item) => {
-          const dateStr = item.date?.slice(0, 10) || "Unknown"; // Format date as YYYY-MM-DD
+          const dateStr = item.date?.slice(0, 10) || "Unknown";  
           if (!aggData[dateStr]) {
             aggData[dateStr] = {
               created_at: dateStr,
@@ -81,100 +77,59 @@ const SentimentOvertime = ({ filteredData }) => {
     fetchSentimentOverTime();
   }, [filteredData]);
 
-  const downloadCSV = () => {
-    if (!data.length) return;
-    const header = ["Date", "Positive", "Neutral", "Negative", "Net Sentiment"];
-    const rows = data.map(d => [d.created_at, d.positive || 0, d.neutral || 0, d.negative || 0, d.net_sentiment || 0]);
-    const csvContent = "data:text/csv;charset=utf-8," + [header, ...rows].map(e => e.join(",")).join("\n");
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.href = encodedUri;
-    link.download = "sentiment-overtime.csv";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
+  
 
-  const takeScreenshot = () => {
-    if (!chartRef.current) return;
-    html2canvas(chartRef.current, { backgroundColor: null }).then(canvas => {
-      const link = document.createElement("a");
-      link.download = "sentiment-overtime.png";
-      link.href = canvas.toDataURL();
-      link.click();
-    });
-  };
+  const onPreview = () => setShowData(prev => !prev);
 
-  const shareChart = () => {
-    if (navigator.share) {
-      navigator.share({
-        title: "Sentiment Over Time",
-        text: "Check out this sentiment over time chart!",
-        url: window.location.href,
-      }).catch(() => alert("Sharing failed or cancelled"));
-    } else {
-      alert("Share not supported in this browser.");
-    }
-  };
+const downloadCSV = () => {
+  if (!data.length) return;
+  const header = ["Date", "Positive", "Neutral", "Negative", "Net Sentiment"];
+  const rows = data.map(d => [d.created_at, d.positive || 0, d.neutral || 0, d.negative || 0, d.net_sentiment || 0]);
+  const csvContent = "data:text/csv;charset=utf-8," + [header, ...rows].map(e => e.join(",")).join("\n");
+  const encodedUri = encodeURI(csvContent);
+  const link = document.createElement("a");
+  link.href = encodedUri;
+  link.download = "sentiment-overtime.csv";
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
+
+const shareChart = () => {
+  if (navigator.share) {
+    navigator.share({
+      title: "Sentiment Over Time",
+      text: "Check out this sentiment over time chart!",
+      url: window.location.href,
+    }).catch(() => alert("Sharing failed or cancelled"));
+  } else {
+    alert("Share not supported in this browser.");
+  }
+};
+
+// const shareChart = () => {
+//   if (!chartRef.current) return;
+//   html2canvas(chartRef.current, { backgroundColor: "rgb(255, 255, 255)" }).then(canvas => {
+//     const link = document.createElement("a");
+//     link.download = "sentiment-overtime.png";
+//     link.href = canvas.toDataURL();
+//     link.click();
+//   });
+// };
+
+
 
   if (loading) return <div>Loading sentiment over time...</div>;
   if (error)
     return <div className="text-red-600 dark:text-red-400">Error: {error}</div>;
 
-  return (
-    <div ref={chartRef} className="w-198 ml-5 my-10 rounded-lg p-6 bg-white dark:bg-[#0f172a] shadow-md">
-      <div className="flex items-center justify-between">
+  const renderAreaChart = () => {
+    return(
+    <div>
 
-        <h2 className="mb-4 font-semibold text-gray-900 dark:text-white">
-
-          Sentiment Over Time
-        </h2>
-        <div className="flex gap-3  ">
-          <button onClick={() => setShowData(!showData)} className="bg-gray-200 cursor-pointer dark:bg-gray-700 rounded px-3 py-1 hover:bg-gray-300 dark:hover:bg-gray-600">{showData ? <IoBarChartOutline size={20} /> : <BsClipboard2Data size={20} /> }</button>
-          <button onClick={downloadCSV} className="bg-gray-200 cursor-pointer dark:bg-gray-700 rounded px-3 py-1 hover:bg-gray-300 dark:hover:bg-gray-600"><FaFileDownload size={20} /></button>
-          <button onClick={shareChart} className="bg-gray-200 cursor-pointer dark:bg-gray-700 rounded px-3 py-1 hover:bg-gray-300 dark:hover:bg-gray-600"><FaShare size={20} /></button>
-        </div>
-
-
-      </div>
-      <p className="mb-6 mt-0 text-sm text-gray-600 dark:text-gray-400">
-        Track sentiment changes for Google Pixel mentions
-      </p>
-
-      {showData ? (
-       <div className="max-h-[350px] overflow-y-auto border border-gray-300 dark:border-gray-700 rounded">
-  <table className="w-full text-left text-sm text-gray-700 dark:text-gray-300">
-    <thead className="bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 sticky top-0 z-10">
-      <tr>
-        <th className="px-3 py-2">Date</th>
-        <th className="px-3 py-2">Positive</th>
-        <th className="px-3 py-2">Neutral</th>
-        <th className="px-3 py-2">Negative</th>
-        <th className="px-3 py-2">Net Sentiment</th>
-      </tr>
-    </thead>
-    <tbody>
-      {data.map((row) => (
-        <tr key={row.created_at} className="border-b border-gray-200 dark:border-gray-700">
-          <td className="px-3 py-2">{row.created_at}</td>
-          <td className="px-3 py-2">{row.positive}</td>
-          <td className="px-3 py-2">{row.neutral}</td>
-          <td className="px-3 py-2">{row.negative}</td>
-          <td className="px-3 py-2">{row.net_sentiment}</td>
-        </tr>
-      ))}
-    </tbody>
-  </table>
-</div>
-
-      ) : (
-
-
-        <ResponsiveContainer width="100%" height={350}>
-          <AreaChart
-            data={data}
-            margin={{ left: 20 }}
-          >
+    
+    <ResponsiveContainer width="100%" height={350}>
+            <AreaChart data={data} margin={{ left: 20 }}>
             <defs>
               <linearGradient id="colorNegative" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="#ef4444" stopOpacity={0.3} />
@@ -195,12 +150,7 @@ const SentimentOvertime = ({ filteredData }) => {
             </defs>
 
             <CartesianGrid strokeDasharray="3 3" stroke="#cbd5e1" className="dark:stroke-gray-700" />
-            <XAxis
-              dataKey="created_at"
-              stroke="#475569"
-              tick={{ fill: "#475569" }}
-              className="dark:text-gray-300"
-            />
+            <XAxis dataKey="created_at" stroke="#475569" tick={{ fill: "#475569" }} className="dark:text-gray-300" />
             <YAxis
               stroke="#475569"
               tick={{ fill: "#475569" }}
@@ -225,8 +175,6 @@ const SentimentOvertime = ({ filteredData }) => {
               itemStyle={{ color: "#fff" }}
             />
             <Legend wrapperStyle={{ color: "white" }} />
-
-            {/* Negative Area */}
             <Area
               type="monotone"
               dataKey="negative"
@@ -236,8 +184,6 @@ const SentimentOvertime = ({ filteredData }) => {
               name="Negative"
               className="dark:stroke-red-500"
             />
-
-            {/* Neutral Area */}
             <Area
               type="monotone"
               dataKey="neutral"
@@ -247,8 +193,6 @@ const SentimentOvertime = ({ filteredData }) => {
               name="Neutral"
               className="dark:stroke-gray-400"
             />
-
-            {/* Positive Area */}
             <Area
               type="monotone"
               dataKey="positive"
@@ -258,8 +202,6 @@ const SentimentOvertime = ({ filteredData }) => {
               name="Positive"
               className="dark:stroke-green-500"
             />
-
-            {/* Net Sentiment Area (dashed stroke) */}
             <Area
               type="monotone"
               dataKey="net_sentiment"
@@ -271,10 +213,107 @@ const SentimentOvertime = ({ filteredData }) => {
               className="dark:stroke-blue-500"
             />
           </AreaChart>
-        </ResponsiveContainer>
+          </ResponsiveContainer>
+          </div>
+          )
+  }
+
+ return (
+  <>
+    {/* Main chart card - clickable to open modal */}
+    <div
+      ref={chartRef}
+      className="w-198 ml-5 my-10 rounded-lg p-6 bg-white dark:bg-[#0f172a] shadow-md cursor-pointer hover:ring-2 ring-blue-300"
+      onClick={() => setModalOpen(true)}
+      tabIndex={0}
+      role="button"
+      aria-label="Open chart details"
+    >
+      <div className="flex items-center justify-between">
+        <h2 className="mb-4 font-semibold text-gray-900 dark:text-white">
+          Sentiment Over Time
+        </h2>
+         
+      </div>
+      <p className="mb-6 mt-0 text-sm text-gray-600 dark:text-gray-400">
+        Track sentiment changes for Google Pixel mentions
+      </p>
+
+      {showData ? (
+        <div className="max-h-[350px] overflow-y-auto border border-gray-300 dark:border-gray-700 rounded">
+          <table className="w-full text-left text-sm text-gray-700 dark:text-gray-300">
+            <thead className="bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 sticky top-0 z-10">
+              <tr>
+                <th className="px-3 py-2">Date</th>
+                <th className="px-3 py-2">Positive</th>
+                <th className="px-3 py-2">Neutral</th>
+                <th className="px-3 py-2">Negative</th>
+                <th className="px-3 py-2">Net Sentiment</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.map((row) => (
+                <tr key={row.created_at} className="border-b border-gray-200 dark:border-gray-700">
+                  <td className="px-3 py-2">{row.created_at}</td>
+                  <td className="px-3 py-2">{row.positive}</td>
+                  <td className="px-3 py-2">{row.neutral}</td>
+                  <td className="px-3 py-2">{row.negative}</td>
+                  <td className="px-3 py-2">{row.net_sentiment}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        renderAreaChart()
       )}
     </div>
-  );
+
+    {/* Modal */}
+    {modalOpen && (
+      <DetailsModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        title="Sentiment Over Time"
+        description="This chart shows the change in positive/neutral/negative sentiment over time for Google Pixel mentions."
+        onPreview={() => setShowData((v) => !v)}
+        onDownload={downloadCSV}
+        onShare={shareChart}
+        previewActive={showData}
+      >
+        {showData ? (
+          <div className="max-h-[350px] overflow-y-auto border border-gray-300 dark:border-gray-700 rounded">
+            <table className="w-full text-left text-sm text-gray-700 dark:text-gray-300">
+              <thead className="bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 sticky top-0 z-10">
+                <tr>
+                  <th className="px-3 py-2">Date</th>
+                  <th className="px-3 py-2">Positive</th>
+                  <th className="px-3 py-2">Neutral</th>
+                  <th className="px-3 py-2">Negative</th>
+                  <th className="px-3 py-2">Net Sentiment</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.map((row) => (
+                  <tr key={row.created_at} className="border-b border-gray-200 dark:border-gray-700">
+                    <td className="px-3 py-2">{row.created_at}</td>
+                    <td className="px-3 py-2">{row.positive}</td>
+                    <td className="px-3 py-2">{row.neutral}</td>
+                    <td className="px-3 py-2">{row.negative}</td>
+                    <td className="px-3 py-2">{row.net_sentiment}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          renderAreaChart()
+        )}
+      </DetailsModal>
+    )}
+  </>
+);
+
 };
 
 export default SentimentOvertime;

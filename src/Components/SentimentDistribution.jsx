@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect, useRef } from "react";
 import { Pie, PieChart, Cell, Sector, ResponsiveContainer } from "recharts";
 import {
   Card,
@@ -15,6 +15,8 @@ import {
   ChartTooltipContent,
 } from "../Components/ui/chart";
 import axios from "axios";
+import DetailsModal from "./DetailsModal";
+
 
 export const description = "A donut chart with a label and platform breakdown per sentiment on hover";
 
@@ -70,6 +72,9 @@ const SentimentDistribution = ({ filteredData }) => {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const [activeIndex, setActiveIndex] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [showData, setShowData] = useState(false);
+  const chartRef = useRef(null);
 
   // Fetch default data only if no filteredData is provided
   useEffect(() => {
@@ -92,6 +97,32 @@ const SentimentDistribution = ({ filteredData }) => {
     }
     fetchSentimentDistribution();
   }, [filteredData]);
+
+  const downloadCSV = () => {
+  if (!data.length) return;
+  const header = ["Date", "Positive", "Neutral", "Negative", "Net Sentiment"];
+  const rows = data.map(d => [d.created_at, d.positive || 0, d.neutral || 0, d.negative || 0, d.net_sentiment || 0]);
+  const csvContent = "data:text/csv;charset=utf-8," + [header, ...rows].map(e => e.join(",")).join("\n");
+  const encodedUri = encodeURI(csvContent);
+  const link = document.createElement("a");
+  link.href = encodedUri;
+  link.download = "sentiment-overtime.csv";
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
+
+const shareChart = () => {
+  if (navigator.share) {
+    navigator.share({
+      title: "Sentiment Over Time",
+      text: "Check out this sentiment over time chart!",
+      url: window.location.href,
+    }).catch(() => alert("Sharing failed or cancelled"));
+  } else {
+    alert("Share not supported in this browser.");
+  }
+};
 
   // Using either filteredData or fetched default data for processing
   const dist = filteredData 
@@ -198,6 +229,7 @@ const SentimentDistribution = ({ filteredData }) => {
       </div>
     );
 
+ 
   return (
     <div>
       <Card className="lg:col-span-2 flex flex-col mt-5 w-full h-130 
