@@ -210,7 +210,7 @@ const TopNegativeDriversWaterfallChart = ({ filteredData }) => {
   return (
     <>
       <Card
-        className="lg:col-span-2 flex flex-col mt-5 w-full h-130 bg-white dark:bg-[#0f172a] rounded-lg shadow-md cursor-pointer hover:ring-2 ring-indigo-500"
+        className="lg:col-span-2 flex flex-col mt-5 w-full h-130 bg-white dark:bg-[#0f172a] rounded-lg shadow-md cursor-pointer hover:ring-2 ring-blue-500"
         onClick={() => setModalOpen(true)}
         tabIndex={0}
         role="button"

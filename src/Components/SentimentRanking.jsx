@@ -163,9 +163,8 @@ const SentimentRanking = ({ filteredData }) => {
       >
         <CardContent className="flex-1">
           <div className="flex justify-between items-center mb-2">
-            <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center">
-              <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
-              Sentiment Rankings
+            <h2 className="text-m font-bold  text-gray-900 dark:text-gray-300 flex items-center">
+               Sentiment Rankings
             </h2>
              
           </div>

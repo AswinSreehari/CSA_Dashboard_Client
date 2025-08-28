@@ -90,7 +90,7 @@ const BrandComparisonChart = ({ filteredData }) => {
     <>
       {/* Main card clickable to open modal */}
       <Card
-        className="lg:col-span-2 flex flex-col mt-10 w-full h-[480px] bg-white dark:bg-[#0f172a] rounded-lg shadow-md cursor-pointer hover:ring-2 ring-blue-500"
+        className="lg:col-span-2 flex flex-col mt-5 w-full h-[480px] bg-white dark:bg-[#0f172a] rounded-lg shadow-md cursor-pointer hover:ring-2 ring-blue-500"
         onClick={() => setModalOpen(true)}
         tabIndex={0}
         role="button"

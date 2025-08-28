@@ -322,7 +322,7 @@ const PlatformBreakdown = ({ filteredData }) => {
 
         <CardContent className="pt-2">
           {showData ? (
-            <div className="max-h-[320px] overflow-y-auto border border-gray-300 dark:border-gray-700 rounded">
+            <div className=" overflow-y-auto border border-gray-300 dark:border-gray-700 rounded">
               <table className="w-full text-left text-sm text-gray-700 dark:text-gray-300">
                 <thead className="bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 sticky top-0">
                   <tr>
@@ -372,7 +372,7 @@ const PlatformBreakdown = ({ filteredData }) => {
           previewActive={showData}
         >
           {showData ? (
-            <div className="max-h-[320px] overflow-y-auto border border-gray-300 dark:border-gray-700 rounded">
+            <div className="  overflow-y-auto border border-gray-300 dark:border-gray-700 rounded">
               <table className="w-full text-left text-sm text-gray-700 dark:text-gray-300">
                 <thead className="bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 sticky top-0">
                   <tr>
@@ -400,7 +400,9 @@ const PlatformBreakdown = ({ filteredData }) => {
               </table>
             </div>
           ) : (
-            renderBarChart()
+             <div className="max-h-[60vh] no-scrollbar pr-1">
+               {renderBarChart()}
+             </div>
           )}
         </DetailsModal>
       )}

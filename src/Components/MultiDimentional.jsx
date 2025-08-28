@@ -160,16 +160,7 @@ const MultiDimensionalComparison = ({ filteredData }) => {
               Comprehensive sentiment analysis across key categories
             </CardDescription>
           </div>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setShowData((prev) => !prev);
-            }}
-            className="text-sm text-indigo-600 dark:text-indigo-400 underline"
-            aria-label="Toggle data preview"
-          >
-            {showData ? "Show Chart" : "Show Data"}
-          </button>
+           
         </CardHeader>
 
         <CardContent>
