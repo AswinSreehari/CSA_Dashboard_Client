@@ -16,6 +16,8 @@ import {
 } from "../Components/ui/chart";
 import axios from "axios";
 import DetailsModal from "./DetailsModal";
+import { shareChart } from "../lib/Sharechart";
+
 
 
 export const description = "A donut chart with a label and platform breakdown per sentiment on hover";
@@ -37,12 +39,12 @@ const PLATFORM_COLORS = [
   "#FB7185",
   "#FCD34D",
   "#10B981",
-]; 
+];
 
 const LEGEND_ITEMS = [
   { key: "positive", label: "Positive", color: COLORS.positive },
   { key: "negative", label: "Negative", color: COLORS.negative },
-  { key: "neutral",  label: "Neutral",  color: COLORS.neutral }
+  { key: "neutral", label: "Neutral", color: COLORS.neutral }
 ];
 
 const NEUTRAL_BOOST = 1;
@@ -98,45 +100,51 @@ const SentimentDistribution = ({ filteredData }) => {
     fetchSentimentDistribution();
   }, [filteredData]);
 
-  const downloadCSV = () => {
-  if (!data.length) return;
-  const header = ["Date", "Positive", "Neutral", "Negative", "Net Sentiment"];
-  const rows = data.map(d => [d.created_at, d.positive || 0, d.neutral || 0, d.negative || 0, d.net_sentiment || 0]);
-  const csvContent = "data:text/csv;charset=utf-8," + [header, ...rows].map(e => e.join(",")).join("\n");
-  const encodedUri = encodeURI(csvContent);
-  const link = document.createElement("a");
-  link.href = encodedUri;
-  link.download = "sentiment-overtime.csv";
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-};
 
-const shareChart = () => {
-  if (navigator.share) {
-    navigator.share({
-      title: "Sentiment Over Time",
-      text: "Check out this sentiment over time chart!",
-      url: window.location.href,
-    }).catch(() => alert("Sharing failed or cancelled"));
-  } else {
-    alert("Share not supported in this browser.");
-  }
-};
 
   // Using either filteredData or fetched default data for processing
-  const dist = filteredData 
+  const dist = filteredData
     ? {
-        positive: filteredData.filter((d) => d.sentiment?.label === "positive").length,
-        negative: filteredData.filter((d) => d.sentiment?.label === "negative").length,
-        neutral: filteredData.filter((d) => d.sentiment?.label === "neutral").length,
-        percentages: null, // no percentages in filtered raw data
-      }
+      positive: filteredData.filter((d) => d.sentiment?.label === "positive").length,
+      negative: filteredData.filter((d) => d.sentiment?.label === "negative").length,
+      neutral: filteredData.filter((d) => d.sentiment?.label === "neutral").length,
+      percentages: null, // no percentages in filtered raw data
+    }
     : data?.sentiment_distribution ?? {};
 
   const platformBreakdown = filteredData
     ? {} // you can enhance this later to compute platformBreakdown from filteredData if needed
     : data?.platform_breakdown ?? {};
+
+  const downloadCSV = () => {
+  if (!data) return;
+  const header = ["Sentiment", "Count", "Percentage"];
+  const rows = [
+    [
+      "Positive",
+      data.sentiment_distribution?.positive || 0,
+      data.sentiment_distribution?.percentages?.positive?.toFixed(2) || "0.00",
+    ],
+    [
+      "Neutral",
+      data.sentiment_distribution?.neutral || 0,
+      data.sentiment_distribution?.percentages?.neutral?.toFixed(2) || "0.00",
+    ],
+    [
+      "Negative",
+      data.sentiment_distribution?.negative || 0,
+      data.sentiment_distribution?.percentages?.negative?.toFixed(2) || "0.00",
+    ],
+  ];
+  const csvContent = "data:text/csv;charset=utf-8," + [header, ...rows].map(e => e.join(",")).join("\n");
+  const encodedUri = encodeURI(csvContent);
+  const link = document.createElement("a");
+  link.href = encodedUri;
+  link.download = "sentiment-distribution.csv";
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
 
   const { chartData, usePercentages } = useMemo(() => {
     const hasPct =
@@ -173,7 +181,7 @@ const shareChart = () => {
         (filteredData
           ? filteredData.length
           : data?.total_mentions ??
-            (dist.positive || 0) + (dist.neutral || 0) + (dist.negative || 0)) || 1;
+          (dist.positive || 0) + (dist.neutral || 0) + (dist.negative || 0)) || 1;
 
       positivePct = ((dist.positive || 0) / total) * 100;
       negativePct = ((dist.negative || 0) / total) * 100;
@@ -216,7 +224,7 @@ const shareChart = () => {
   const totalValue = filteredData
     ? filteredData.length
     : data?.total_mentions ??
-      (dist.positive || 0) + (dist.neutral || 0) + (dist.negative || 0);
+    (dist.positive || 0) + (dist.neutral || 0) + (dist.negative || 0);
 
   const hoveredSentiment = chartData[activeIndex]?.key;
   const innerPlatforms = platformBreakdown?.[hoveredSentiment] || [];
@@ -229,172 +237,278 @@ const shareChart = () => {
       </div>
     );
 
- 
-  return (
-    <div>
-      <Card className="lg:col-span-2 flex flex-col mt-5 w-full h-130 
-        bg-white dark:bg-[#0f172a] rounded-lg relative overflow-visible
-        border border-gray-100 dark:border-slate-700">
-        {/* Legend in top-right */}
-        <div
-          style={{
-            position: "absolute",
-            top: 22,
-            right: 26,
-            display: "flex",
-            gap: "12px",
-            zIndex: 10,
-          }}
-        >
-          {LEGEND_ITEMS.map((item) => (
-            <div
-              key={item.key}
-              style={{ display: "flex", alignItems: "center", gap: "5px" }}
+
+  const renderChart = () => {
+    return (
+      <ChartContainer
+        config={{ visitors: { label: "Mentions" } }}
+        className="[&_.recharts-pie-label-text]:fill-foreground mx-auto aspect-square h-90 w-[440px] max-w-full mt-0 pb-0"
+      >
+        <ResponsiveContainer width="100%" height={400}>
+          <PieChart width={400} height={400}>
+            {/* Centered label */}
+            <text
+              x="220"
+              y="170"
+              textAnchor="middle"
+              dominantBaseline="middle"
+              className="font-bold text-neutral-700 dark:text-neutral-200"
+              fontSize="24"
+              fill="currentColor"
+              style={{
+                fontWeight: 700,
+                pointerEvents: "none",
+              }}
             >
-              <span
-                style={{
-                  display: "inline-block",
-                  width: "16px",
-                  height: "16px",
-                  borderRadius: "3px",
-                  background: item.color,
-                  border: "1.5px solid #e2e8f0",
-                }}
-              />
-              <span
-                className="text-xs text-gray-700 dark:text-gray-300 select-none"
-                style={{ userSelect: "none" }}
-              >
-                {item.label}
-              </span>
-            </div>
-          ))}
-        </div>
+              Total
+            </text>
+            <text
+              x="220"
+              y="200"
+              textAnchor="middle"
+              dominantBaseline="middle"
+              className="font-bold  text-neutral-700 dark:text-neutral-200"
+              fontSize="33"
+              fill="currentColor"
+              style={{
+                fontWeight: 700,
+                pointerEvents: "none",
+              }}
+            >
+              {totalValue}
+            </text>
+            <ChartTooltip
+              content={
+                <ChartTooltipContent
+                  hideLabel
+                  formatter={(value, name, item) => {
+                    const p = item?.payload?.percent ?? 0;
+                    return (
+                      <div className="flex w-full justify-between text-gray-900 dark:text-gray-100">
+                        <span>{name}</span>
+                        <span className="font-mono">{toPct(p)}</span>
+                      </div>
+                    );
+                  }}
+                />
+              }
+            />
 
-        <CardHeader className="items-center pb-0">
-          <CardTitle className="text-gray-900 dark:text-gray-100">
-            Sentiment Distribution
-          </CardTitle>
-          <CardDescription className="text-gray-600 dark:text-gray-400">
-            Breakdown of sentiment across all platforms
-          </CardDescription>
-        </CardHeader>
+            {/* OUTER sentiment ring */}
+            <Pie
+              data={chartData}
+              dataKey="value"
+              nameKey="browser"
+              label={(entry) => toPct(entry.payload.percent || 0)}
+              labelLine
+              cx="50%"
+              cy="50%"
+              outerRadius={140}
+              innerRadius={90}
+              isAnimationActive={false}
+              activeIndex={activeIndex}
+              activeShape={renderActiveShape}
+              onMouseEnter={(_, i) => setActiveIndex(i)}
+              onMouseLeave={() => setActiveIndex(null)}
+            >
+              {chartData?.map((entry, i) => (
+                <Cell
+                  key={i}
+                  fill={entry.fill}
+                  stroke="#fff"
+                  strokeWidth={4}
+                  className="dark:stroke-[#1a1a1a]"
+                />
+              ))}
+            </Pie>
 
-        <CardContent className="flex-1 pb-0">
-          <ChartContainer
-            config={{ visitors: { label: "Mentions" } }}
-            className="[&_.recharts-pie-label-text]:fill-foreground mx-auto aspect-square w-[440px] max-w-full mt-0 pb-0"
-          >
-            <ResponsiveContainer width="100%" height={400}>
-            <PieChart width={400} height={400}>
-              {/* Centered label */}
-              <text
-                x="220"
-                y="200"
-                textAnchor="middle"
-                dominantBaseline="middle"
-                className="font-bold text-neutral-700 dark:text-neutral-200"
-                fontSize="24"
-                fill="currentColor"
-                style={{
-                  fontWeight: 700,
-                  pointerEvents: "none",
-                }}
-              >
-                Total
-              </text>
-              <text
-                x="220"
-                y="230"
-                textAnchor="middle"
-                dominantBaseline="middle"
-                className="font-bold  text-neutral-700 dark:text-neutral-200"
-                fontSize="33"
-                fill="currentColor"
-                style={{
-                  fontWeight: 700,
-                  pointerEvents: "none",
-                }}
-              >
-                {totalValue}
-              </text>
-              <ChartTooltip
-                content={
-                  <ChartTooltipContent
-                    hideLabel
-                    formatter={(value, name, item) => {
-                      const p = item?.payload?.percent ?? 0;
-                      return (
-                        <div className="flex w-full justify-between text-gray-900 dark:text-gray-100">
-                          <span>{name}</span>
-                          <span className="font-mono">{toPct(p)}</span>
-                        </div>
-                      );
-                    }}
-                  />
-                }
-              />
-
-              {/* OUTER sentiment ring */}
+            {/* INNER platform breakdown for hovered sentiment */}
+            {activeIndex !== null && innerPlatforms.length > 0 && (
               <Pie
-                data={chartData}
-                dataKey="value"
-                nameKey="browser"
-                label={(entry) => toPct(entry.payload.percent || 0)}
-                labelLine
+                data={innerPlatforms}
+                dataKey="count"
+                nameKey="platform"
                 cx="50%"
                 cy="50%"
-                outerRadius={140}
-                innerRadius={90}
+                innerRadius={60}
+                outerRadius={83}
                 isAnimationActive={false}
-                activeIndex={activeIndex}
-                activeShape={renderActiveShape}
-                onMouseEnter={(_, i) => setActiveIndex(i)}
-                onMouseLeave={() => setActiveIndex(null)}
+                label={({ platform, percent }) =>
+                  `${platform}: ${(percent * 100).toFixed(1)}%`
+                }
               >
-                {chartData.map((entry, i) => (
+                {innerPlatforms?.map((p, idx) => (
                   <Cell
-                    key={i}
-                    fill={entry.fill}
+                    key={idx}
+                    fill={PLATFORM_COLORS[idx % PLATFORM_COLORS.length]}
                     stroke="#fff"
-                    strokeWidth={4}
-                    className="dark:stroke-[#1a1a1a]"
+                    strokeWidth={2}
                   />
                 ))}
               </Pie>
+            )}
+          </PieChart>
+        </ResponsiveContainer>
+      </ChartContainer>
+    )
+  }
 
-              {/* INNER platform breakdown for hovered sentiment */}
-              {activeIndex !== null && innerPlatforms.length > 0 && (
-                <Pie
-                  data={innerPlatforms}
-                  dataKey="count"
-                  nameKey="platform"
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={60}
-                  outerRadius={83}
-                  isAnimationActive={false}
-                  label={({ platform, percent }) =>
-                    `${platform}: ${(percent * 100).toFixed(1)}%`
-                  }
+
+  return (
+    <>
+      <div
+        onClick={() => setModalOpen(true)}
+        tabIndex={0}
+        role="button"
+        aria-label="Open chart details"
+        className="cursor-pointer hover:ring-2 ring-blue-300 rounded-lg"
+      >
+        <Card className="lg:col-span-2 flex flex-col mt-5 w-full h-130 
+        bg-white dark:bg-[#0f172a] rounded-lg relative overflow-visible
+        border border-gray-100 dark:border-slate-700">
+          {/* Legend in top-right */}
+          <div
+            style={{
+              position: "absolute",
+              top: 22,
+              right: 26,
+              display: "flex",
+              gap: "12px",
+              zIndex: 10,
+            }}
+          >
+            {LEGEND_ITEMS?.map((item) => (
+              <div
+                key={item.key}
+                style={{ display: "flex", alignItems: "center", gap: "5px" }}
+              >
+                <span
+                  style={{
+                    display: "inline-block",
+                    width: "16px",
+                    height: "16px",
+                    borderRadius: "3px",
+                    background: item.color,
+                    border: "1.5px solid #e2e8f0",
+                  }}
+                />
+                <span
+                  className="text-xs text-gray-700 dark:text-gray-300 select-none"
+                  style={{ userSelect: "none" }}
                 >
-                  {innerPlatforms.map((p, idx) => (
-                    <Cell
-                      key={idx}
-                      fill={PLATFORM_COLORS[idx % PLATFORM_COLORS.length]}
-                      stroke="#fff"
-                      strokeWidth={2}
-                    />
-                  ))}
-                </Pie>
-              )}
-            </PieChart>
-            </ResponsiveContainer>
+                  {item.label}
+                </span>
+              </div>
+            ))}
+          </div>
 
-          </ChartContainer>
-        </CardContent>
-      </Card>
-    </div>
+          <CardHeader className="items-center pb-0">
+            <CardTitle className="text-gray-900 dark:text-gray-100">
+              Sentiment Distribution
+            </CardTitle>
+            <CardDescription className="text-gray-600 dark:text-gray-400">
+              Breakdown of sentiment across all platforms
+            </CardDescription>
+          </CardHeader>
+
+          <CardContent className="flex-1 pb-0">
+            {showData ? (
+              <div className="max-h-[350px] overflow-y-auto border border-gray-300 dark:border-gray-700 rounded p-4">
+                <table className="w-full text-left text-sm text-gray-700 dark:text-gray-300">
+                  <thead className="bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 sticky top-0 z-10">
+                    <tr>
+                      <th className="p-2">Sentiment</th>
+                      <th className="p-2">Count</th>
+                      <th className="p-2">Percentage</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="border-b border-gray-200 dark:border-gray-700">
+                      <td className="p-2 font-semibold">Positive</td>
+                      <td className="p-2">{data?.sentiment_distribution?.positive ?? "-"}</td>
+                      <td className="p-2">{data?.sentiment_distribution?.percentages?.positive?.toFixed(2) ?? "-"}%</td>
+                    </tr>
+                    <tr className="border-b border-gray-200 dark:border-gray-700">
+                      <td className="p-2 font-semibold">Neutral</td>
+                      <td className="p-2">{data?.sentiment_distribution?.neutral ?? "-"}</td>
+                      <td className="p-2">{data?.sentiment_distribution?.percentages?.neutral?.toFixed(2) ?? "-"}%</td>
+                    </tr>
+                    <tr className="border-b border-gray-200 dark:border-gray-700">
+                      <td className="p-2 font-semibold">Negative</td>
+                      <td className="p-2">{data?.sentiment_distribution?.negative ?? "-"}</td>
+                      <td className="p-2">{data?.sentiment_distribution?.percentages?.negative?.toFixed(2) ?? "-"}%</td>
+                    </tr>
+                    <tr className="font-bold">
+                      <td className="p-2">Total</td>
+                      <td className="p-2">{data?.total_mentions ?? "-"}</td>
+                      <td className="p-2">100%</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              renderChart()
+            )}
+
+          </CardContent>
+        </Card>
+
+      </div>
+
+      {modalOpen && (
+        <DetailsModal
+          open={modalOpen}
+          onClose={() => setModalOpen(false)}
+          title="Sentiment Distrubution"
+          description="Breakdown of sentiment across all platforms"
+          onPreview={() => setShowData((v) => !v)}
+          onDownload={downloadCSV}
+          onShare={shareChart}
+          previewActive={showData}
+          LEGEND_ITEMS={LEGEND_ITEMS}
+        >
+          {showData ? (
+            <div className="max-h-[350px] overflow-y-auto border border-gray-300 dark:border-gray-700 rounded p-4">
+              <table className="w-full text-left text-sm text-gray-700 dark:text-gray-300">
+                <thead className="bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 sticky top-0 z-10">
+                  <tr>
+                    <th className="p-2">Sentiment</th>
+                    <th className="p-2">Count</th>
+                    <th className="p-2">Percentage</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr className="border-b border-gray-200 dark:border-gray-700">
+                    <td className="p-2 font-semibold">Positive</td>
+                    <td className="p-2">{data?.sentiment_distribution?.positive ?? "-"}</td>
+                    <td className="p-2">{data?.sentiment_distribution?.percentages?.positive?.toFixed(2) ?? "-"}%</td>
+                  </tr>
+                  <tr className="border-b border-gray-200 dark:border-gray-700">
+                    <td className="p-2 font-semibold">Neutral</td>
+                    <td className="p-2">{data?.sentiment_distribution?.neutral ?? "-"}</td>
+                    <td className="p-2">{data?.sentiment_distribution?.percentages?.neutral?.toFixed(2) ?? "-"}%</td>
+                  </tr>
+                  <tr className="border-b border-gray-200 dark:border-gray-700">
+                    <td className="p-2 font-semibold">Negative</td>
+                    <td className="p-2">{data?.sentiment_distribution?.negative ?? "-"}</td>
+                    <td className="p-2">{data?.sentiment_distribution?.percentages?.negative?.toFixed(2) ?? "-"}%</td>
+                  </tr>
+                  <tr className="font-bold">
+                    <td className="p-2">Total</td>
+                    <td className="p-2">{data?.total_mentions ?? "-"}</td>
+                    <td className="p-2">100%</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="max-h-[49vh] no-scrollbar pr-1">
+            {renderChart()}
+            </div>
+          )}
+        </DetailsModal>
+      )}
+    </>
   );
 };
 

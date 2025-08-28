@@ -15,6 +15,7 @@ import axios from "axios";
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 import html2canvas from "html2canvas";
 import DetailsModal from "./DetailsModal";
+import { shareChart } from "../lib/Sharechart";
 
 
 const SentimentOvertime = ({ filteredData }) => {
@@ -95,30 +96,8 @@ const downloadCSV = () => {
   document.body.removeChild(link);
 };
 
-const shareChart = () => {
-  if (navigator.share) {
-    navigator.share({
-      title: "Sentiment Over Time",
-      text: "Check out this sentiment over time chart!",
-      url: window.location.href,
-    }).catch(() => alert("Sharing failed or cancelled"));
-  } else {
-    alert("Share not supported in this browser.");
-  }
-};
-
-// const shareChart = () => {
-//   if (!chartRef.current) return;
-//   html2canvas(chartRef.current, { backgroundColor: "rgb(255, 255, 255)" }).then(canvas => {
-//     const link = document.createElement("a");
-//     link.download = "sentiment-overtime.png";
-//     link.href = canvas.toDataURL();
-//     link.click();
-//   });
-// };
-
-
-
+ 
+ 
   if (loading) return <div>Loading sentiment over time...</div>;
   if (error)
     return <div className="text-red-600 dark:text-red-400">Error: {error}</div>;
@@ -217,7 +196,6 @@ const shareChart = () => {
           </div>
           )
   }
-
  return (
   <>
     {/* Main chart card - clickable to open modal */}
@@ -235,7 +213,7 @@ const shareChart = () => {
         </h2>
          
       </div>
-      <p className="mb-6 mt-0 text-sm text-gray-600 dark:text-gray-400">
+      <p className="mb-6 text-sm text-gray-600 dark:text-gray-400">
         Track sentiment changes for Google Pixel mentions
       </p>
 

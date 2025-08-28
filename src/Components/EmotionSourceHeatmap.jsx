@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useMemo } from "react";
 import axios from "axios";
 import * as echarts from "echarts/core";
 import {
@@ -19,6 +19,9 @@ import {
   CardTitle,
 } from "../Components/ui/card";
 
+import DetailsModal from "./DetailsModal";
+import { shareChart } from "../lib/Sharechart";
+
 echarts.use([
   TooltipComponent,
   GridComponent,
@@ -29,23 +32,11 @@ echarts.use([
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
-const hours = [
-  "12a", "1a", "2a", "3a", "4a", "5a", "6a",
-  "7a", "8a", "9a", "10a", "11a",
-  "12p", "1p", "2p", "3p", "4p", "5p",
-  "6p", "7p", "8p", "9p", "10p", "11p"
-];
-const days = [
-  "Saturday", "Friday", "Thursday",
-  "Wednesday", "Tuesday", "Monday", "Sunday"
-];
+const emotionLabels = ["positive", "neutral", "negative"];
+const sourceLabels = ["Facebook", "Twitter", "Instagram", "Reddit", "Other"];
 
 function transformData(rawData) {
-  const emotionIndex = {
-    positive: 0,
-    neutral: 1,
-    negative: 2,
-  };
+  const emotionIndex = { positive: 0, neutral: 1, negative: 2 };
   const sourceIndex = {
     Facebook: 0,
     Twitter: 1,
@@ -54,7 +45,6 @@ function transformData(rawData) {
     Other: 4,
   };
 
-  // Build array of [sourceIndex, emotionIndex, count]
   return rawData.map(({ emotion, source, count }) => [
     sourceIndex[source] ?? 4,
     emotionIndex[emotion] ?? 1,
@@ -63,12 +53,7 @@ function transformData(rawData) {
 }
 
 const aggregateFilteredData = (filteredData) => {
-  // Aggregate counts by source and emotion from filteredData
-  const emotionIndex = {
-    positive: 0,
-    neutral: 1,
-    negative: 2,
-  };
+  const emotionIndex = { positive: 0, neutral: 1, negative: 2 };
   const sourceIndex = {
     Facebook: 0,
     Twitter: 1,
@@ -99,6 +84,19 @@ const EmotionSourceHeatmap = ({ filteredData }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  const [modalOpen, setModalOpen] = useState(false);
+  const [showData, setShowData] = useState(false);
+
+  // Format data as a table-friendly array
+  const formattedData = useMemo(() => {
+    if (!heatmapData.length) return [];
+    return heatmapData.map(([s, e, c]) => ({
+      source: sourceLabels[s],
+      emotion: emotionLabels[e],
+      count: c,
+    }));
+  }, [heatmapData]);
+
   useEffect(() => {
     if (filteredData && filteredData.length > 0) {
       const aggregated = aggregateFilteredData(filteredData);
@@ -112,7 +110,9 @@ const EmotionSourceHeatmap = ({ filteredData }) => {
       try {
         setLoading(true);
         setError(null);
-        const res = await axios.get(`${BASE_URL}/api/feedback/emotion-source-heatmap`);
+        const res = await axios.get(
+          `${BASE_URL}/api/feedback/emotion-source-heatmap`
+        );
         const transformed = transformData(res.data);
         setHeatmapData(transformed);
       } catch (err) {
@@ -125,7 +125,7 @@ const EmotionSourceHeatmap = ({ filteredData }) => {
   }, [filteredData]);
 
   useEffect(() => {
-    if (!chartRef.current || !heatmapData.length) return;
+  if (!chartRef.current || !heatmapData.length || showData) return;
 
     if (!chartInstance.current) {
       chartInstance.current = echarts.init(chartRef.current);
@@ -136,15 +136,15 @@ const EmotionSourceHeatmap = ({ filteredData }) => {
       tooltip: {
         position: "top",
         formatter: function (params) {
-          const sourceNames = ["Facebook", "Twitter", "Instagram", "Reddit", "Other"];
-          const emotionNames = ["positive", "neutral", "negative"];
-          return `${sourceNames[params.data[0]]} × ${emotionNames[params.data[1]]}: ${params.data[2]} mentions`;
+          return `${sourceLabels[params.data[0]]} × ${
+            emotionLabels[params.data[1]]
+          }: ${params.data[2]} mentions`;
         },
       },
       grid: { height: "50%", top: "10%" },
       xAxis: {
         type: "category",
-        data: ["Facebook", "Twitter", "Instagram", "Reddit", "Other"],
+        data: sourceLabels,
         splitArea: { show: true },
         name: "Source",
         nameLocation: "middle",
@@ -152,7 +152,7 @@ const EmotionSourceHeatmap = ({ filteredData }) => {
       },
       yAxis: {
         type: "category",
-        data: ["positive", "neutral", "negative"],
+        data: emotionLabels,
         splitArea: { show: true },
         name: "Emotion",
         nameLocation: "middle",
@@ -168,10 +168,7 @@ const EmotionSourceHeatmap = ({ filteredData }) => {
         inRange: {
           color: ["#e0f3f8", "#abd9e9", "#74add1", "#4575b4", "#313695"],
         },
-        textStyle: {
-          color: "#ffffff",
-          fontSize: 12,
-        },
+        textStyle: { color: "#ffffff", fontSize: 12 },
       },
       series: [
         {
@@ -192,36 +189,125 @@ const EmotionSourceHeatmap = ({ filteredData }) => {
     chart.setOption(option);
 
     const resizeObserver = new ResizeObserver(() => {
+    if (chartRef.current) {
       chart.resize();
-    });
-
+    }
+  });
     resizeObserver.observe(chartRef.current);
+
 
     return () => {
       resizeObserver.disconnect();
       chart.dispose();
       chartInstance.current = null;
     };
-  }, [heatmapData]);
+  }, [heatmapData, showData]);
+
+  // New effect to resize and refresh chart when modal opens and chart view is active
+  useEffect(() => {
+    if (modalOpen && !showData && chartInstance.current) {
+      const timeout = setTimeout(() => {
+        chartInstance.current.resize();
+        chartInstance.current.setOption(chartInstance.current.getOption());
+      }, 100); // allow modal open animation
+      return () => clearTimeout(timeout);
+    }
+  }, [modalOpen, showData]);
+
+  const downloadCSV = () => {
+    if (!formattedData.length) return;
+    const header = ["Source", "Emotion", "Count"];
+    const rows = formattedData.map((d) => [d.source, d.emotion, d.count]);
+    const csvContent =
+      "data:text/csv;charset=utf-8," +
+      [header, ...rows].map((e) => e.join(",")).join("\n");
+    const link = document.createElement("a");
+    link.href = encodeURI(csvContent);
+    link.download = "emotion-source-heatmap.csv";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   if (loading) return <div>Loading emotion × source heatmap...</div>;
   if (error) return <div className="text-red-600 dark:text-red-400">{error}</div>;
   if (!heatmapData.length) return <div>No heatmap data available.</div>;
 
+  const renderTable = () => (
+    <div className="max-h-[360px] overflow-y-auto border border-gray-300 dark:border-gray-700 rounded">
+      <table className="w-full text-left text-sm text-gray-700 dark:text-gray-300">
+        <thead className="bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 sticky top-0 z-10">
+          <tr>
+            <th className="px-3 py-2">Source</th>
+            <th className="px-3 py-2">Emotion</th>
+            <th className="px-3 py-2">Count</th>
+          </tr>
+        </thead>
+        <tbody>
+          {formattedData.map((row, idx) => (
+            <tr
+              key={idx}
+              className="border-b border-gray-200 dark:border-gray-700"
+            >
+              <td className="px-3 py-2">{row.source}</td>
+              <td className="px-3 py-2">{row.emotion}</td>
+              <td className="px-3 py-2">{row.count}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+
+  const renderChart = () => <div ref={chartRef} style={{ width: "100%", height: "100%" }} />;
+
   return (
-    <Card className="lg:col-span-2 flex flex-col mt-10 w-full h-[480px] bg-white dark:bg-[#0f172a] rounded-lg shadow-md">
-      <CardHeader className="px-4 pt-4 pb-1">
-        <CardTitle className="text-gray-900 dark:text-gray-100 text-base font-semibold">
-          Emotion Source Heatmap
-        </CardTitle>
-        <CardDescription className="text-gray-700 dark:text-gray-400">
-          Visualizing emotion distribution across platforms
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="flex-1 p-4 w-full">
-        <div ref={chartRef} style={{ width: "100%", height: "100%" }} />
-      </CardContent>
-    </Card>
+    <>
+      {/* Main card (clickable to open modal) */}
+      <Card
+        className="lg:col-span-2 flex flex-col mt-10 w-full h-[480px] bg-white dark:bg-[#0f172a] rounded-lg shadow-md cursor-pointer hover:ring-2 ring-blue-300"
+        onClick={() => setModalOpen(true)}
+        role="button"
+        tabIndex={0}
+        aria-label="Open emotion × source heatmap details"
+      >
+        <CardHeader className="px-4 pt-4 pb-1">
+          <CardTitle className="text-gray-900 dark:text-gray-100 text-base font-semibold">
+            Emotion Source Heatmap
+          </CardTitle>
+          <CardDescription className="text-gray-700 dark:text-gray-400">
+            Visualizing emotion distribution across platforms
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex-1 p-4 w-full">
+          {showData ? renderTable() : renderChart()}
+        </CardContent>
+      </Card>
+
+      {/* Details Modal */}
+      {modalOpen && (
+        <DetailsModal
+          open={modalOpen}
+          onClose={() => {
+            setModalOpen(false);
+            setShowData(false);
+          }}
+          title="Emotion Source Heatmap"
+          description="This heatmap shows the distribution of emotions across different social media sources."
+          onPreview={() => setShowData((v) => !v)}
+          onDownload={downloadCSV}
+          onShare={shareChart}
+          previewActive={showData}
+        >
+          <div className="h-[420px] w-full">
+            <div style={{ display: showData ? "none" : "block", width: "100%", height: "100%" }} ref={chartRef} />
+
+{showData && renderTable()}
+
+          </div>
+        </DetailsModal>
+      )}
+    </>
   );
 };
 
