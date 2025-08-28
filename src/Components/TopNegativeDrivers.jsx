@@ -97,7 +97,7 @@ const TopNegativeDriversWaterfallChart = ({ filteredData }) => {
     const option = {
       tooltip: {
         trigger: "axis",
-        axisPointer: { type: "shadow" },
+        axisPointer: { type: "none" },
         formatter: function (params) {
           const tar = params[1];
           return `${tar.name}<br/>${tar.seriesName}: ${tar.value}`;

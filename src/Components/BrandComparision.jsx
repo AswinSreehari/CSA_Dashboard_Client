@@ -155,7 +155,9 @@ const BrandComparisonChart = ({ filteredData }) => {
                     style: { textAnchor: "middle", fontSize: 14 },
                   }}
                 />
-                <Tooltip />
+                <Tooltip 
+                 cursor={false} 
+                />
                 <Bar dataKey="mentions" fill="#6366F1" />
               </BarChart>
             </ResponsiveContainer>
@@ -224,7 +226,9 @@ const BrandComparisonChart = ({ filteredData }) => {
                     style: { textAnchor: "middle", fontSize: 14 },
                   }}
                 />
-                <Tooltip />
+                <Tooltip
+                 cursor={false} 
+                />
                 <Bar dataKey="mentions" fill="#6366F1" />
               </BarChart>
             </ResponsiveContainer>

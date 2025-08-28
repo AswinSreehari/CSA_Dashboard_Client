@@ -183,7 +183,8 @@ const TrendingRaceModel = ({ filteredData }) => {
                 layout="vertical"
                 barGap={4}
                 margin={{ bottom: 20, right: 20 }}
-              >
+                activeShape={null}
+               >
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis
                   type="number"
@@ -198,13 +199,17 @@ const TrendingRaceModel = ({ filteredData }) => {
                   width={160}
                   interval={0}
                 />
-                <Tooltip />
+                <Tooltip 
+                 cursor={false} 
+ 
+                />
                 <Bar
                   dataKey="mentions"
                   fill="#6366F1"
                   radius={[4, 4, 4, 4]}
                   barSize={24}
                   isAnimationActive={false}
+                  active={false}
                 />
               </BarChart>
             </ResponsiveContainer>
@@ -274,7 +279,10 @@ const TrendingRaceModel = ({ filteredData }) => {
                   width={160}
                   interval={0}
                 />
-                <Tooltip />
+                <Tooltip 
+                 cursor={false} 
+                 
+                />
                 <Bar
                   dataKey="mentions"
                   fill="#6366F1"

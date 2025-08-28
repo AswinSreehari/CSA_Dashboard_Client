@@ -239,6 +239,7 @@ const PlatformBreakdown = ({ filteredData }) => {
             }}
           />
           <ChartTooltip
+           cursor={false} 
             content={
               <ChartTooltipContent
                 hideLabel
