@@ -11,6 +11,7 @@ import {
   X,
 } from "lucide-react";
 import axios from "axios";
+import TopsectionLoader from "./TopsectionLoader";
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 const iconMap = {
@@ -180,7 +181,7 @@ const TopSection = () => {
     }
   };
 
-  if (loading) return <div>Loading stats...</div>;
+  if (loading) return <div><TopsectionLoader /></div>;
   if (error) return <div style={{ color: "red" }}>Error: {error}</div>;
   if (!stats) return null;
 

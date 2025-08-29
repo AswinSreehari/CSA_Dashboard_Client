@@ -182,7 +182,7 @@ const MentionVolume = ({ filteredData }) => {
       {/* Main chart card - clickable to open modal */}
       <div
         ref={chartRef}
-        className="w-full rounded-lg p-6 bg-white dark:bg-[#0f172a] shadow-md cursor-pointer hover:ring-2 ring-blue-300"
+        className="w-full rounded-lg p-6 bg-white dark:bg-[#0f172a] mt-0 shadow-md cursor-pointer hover:ring-2 ring-blue-300"
         onClick={() => setModalOpen(true)}
         tabIndex={0}
         role="button"
@@ -192,16 +192,7 @@ const MentionVolume = ({ filteredData }) => {
           <h2 className="mb-2 font-semibold text-gray-900 dark:text-white">
             Mention Volume Over Time
           </h2>
-          {/* <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setShowData((prev) => !prev);
-            }}
-            className="text-sm text-blue-600 dark:text-blue-400 underline"
-            aria-label="Toggle data preview"
-          >
-            {showData ? "Show Chart" : "Show Data"}
-          </button> */}
+          
         </div>
         <p className="mb-6 text-sm text-gray-600 dark:text-gray-400">
           Track the volume of mentions for Google Pixel

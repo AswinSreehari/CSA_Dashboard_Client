@@ -302,7 +302,7 @@ const PlatformBreakdown = ({ filteredData }) => {
       {/* Main Card (clickable for modal) */}
       <Card
         ref={chartRef}
-        className="flex flex-col bg-white dark:bg-[#0f172a] w-150 h-120 mt-10 rounded-lg shadow-md cursor-pointer hover:ring-2 ring-blue-300"
+        className="flex flex-col bg-white dark:bg-[#0f172a] w-150 h-120 my-5 rounded-lg shadow-md cursor-pointer hover:ring-2 ring-blue-300"
         onClick={() => setModalOpen(true)}
         tabIndex={0}
         role="button"

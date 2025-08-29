@@ -172,7 +172,7 @@ const MultiDimensionalComparison = ({ filteredData }) => {
                   <tr>
                     <th className="px-3 py-2">Category</th>
                     {brands.map((brand) => (
-                      <th key={brand} className="px-3 py-2">{brand}</th>
+                      <th key={brand} className="px-3 py-3 my-2">{brand}</th>
                     ))}
                   </tr>
                 </thead>
