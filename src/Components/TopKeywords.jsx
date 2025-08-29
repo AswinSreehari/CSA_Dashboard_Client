@@ -232,7 +232,7 @@ const TopKeywords = ({ filteredData, sidebarOpen }) => {
       {/* Main Card (clickable) */}
       <div
         ref={chartRef}
-        className={`col-span-12 lg:col-span-${sidebarOpen ? 8 : 12} mt-5 mx-0 transition-all duration-300 cursor-pointer hover:ring-2 ring-blue-300 rounded-lg`}
+        className={`col-span-12 lg:col-span-${sidebarOpen ? 8 : 12} mt-5 mx-0 transition-all duration-300 cursor-pointer hover:ring-2 ring-blue-500 rounded-lg`}
         onClick={() => setModalOpen(true)}
         tabIndex={0}
         role="button"

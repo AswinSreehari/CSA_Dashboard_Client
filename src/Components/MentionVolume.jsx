@@ -182,7 +182,7 @@ const MentionVolume = ({ filteredData }) => {
       {/* Main chart card - clickable to open modal */}
       <div
         ref={chartRef}
-        className="w-full rounded-lg p-6 bg-white dark:bg-[#0f172a] mt-0 shadow-md cursor-pointer hover:ring-2 ring-blue-300"
+        className="w-full rounded-lg p-6 bg-white dark:bg-[#0f172a] mt-0 shadow-md cursor-pointer hover:ring-2 ring-blue-500"
         onClick={() => setModalOpen(true)}
         tabIndex={0}
         role="button"

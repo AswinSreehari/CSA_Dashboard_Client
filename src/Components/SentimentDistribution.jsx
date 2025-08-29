@@ -362,7 +362,7 @@ const SentimentDistribution = ({ filteredData }) => {
         tabIndex={0}
         role="button"
         aria-label="Open chart details"
-        className="cursor-pointer hover:ring-2 ring-blue-300 rounded-lg"
+        className="cursor-pointer hover:ring-2 ring-blue-500 rounded-lg"
       >
         <Card className="lg:col-span-2 flex flex-col mt-5 w-full h-130 
         bg-white dark:bg-[#0f172a] rounded-lg relative overflow-visible

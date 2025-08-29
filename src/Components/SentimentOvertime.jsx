@@ -209,7 +209,7 @@ const downloadCSV = () => {
       aria-label="Open chart details"
     >
       <div className="flex items-center justify-between">
-        <h2 className="mb-4 font-semibold text-gray-900 dark:text-white">
+        <h2 className="  font-semibold text-gray-900 dark:text-white">
           Sentiment Over Time
         </h2>
          
