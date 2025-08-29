@@ -79,8 +79,12 @@ const aggregateFilteredData = (filteredData) => {
 };
 
 const EmotionSourceHeatmap = ({ filteredData }) => {
-  const chartRef = useRef(null);
-  const chartInstance = useRef(null);
+  const chartRefMain = useRef(null);
+  const chartInstanceMain = useRef(null);
+
+  const chartRefModal = useRef(null);
+  const chartInstanceModal = useRef(null);
+
   const [heatmapData, setHeatmapData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -98,6 +102,7 @@ const EmotionSourceHeatmap = ({ filteredData }) => {
     }));
   }, [heatmapData]);
 
+  // Fetch/Aggregate Data
   useEffect(() => {
     if (filteredData && filteredData.length > 0) {
       const aggregated = aggregateFilteredData(filteredData);
@@ -125,96 +130,114 @@ const EmotionSourceHeatmap = ({ filteredData }) => {
     fetchHeatmapData();
   }, [filteredData]);
 
-  useEffect(() => {
-  if (!chartRef.current || !heatmapData.length || showData) return;
-
-    if (!chartInstance.current) {
-      chartInstance.current = echarts.init(chartRef.current);
-    }
-    const chart = chartInstance.current;
-
-    const option = {
-      tooltip: {
-        position: "top",
-        formatter: function (params) {
-          return `${sourceLabels[params.data[0]]} × ${
-            emotionLabels[params.data[1]]
-          }: ${params.data[2]} mentions`;
-        },
+  // Chart option builder
+  const getChartOption = () => ({
+    tooltip: {
+      position: "top",
+      formatter: function (params) {
+        return `${sourceLabels[params.data[0]]} × ${emotionLabels[params.data[1]]}: ${params.data[2]} mentions`;
       },
-      grid: { height: "50%", top: "10%" },
-      xAxis: {
-        type: "category",
-        data: sourceLabels,
-        splitArea: { show: true },
-        name: "Source",
-        nameLocation: "middle",
-        nameGap: 30,
+    },
+    grid: { height: "50%", top: "10%" },
+    xAxis: {
+      type: "category",
+      data: sourceLabels,
+      splitArea: { show: true },
+      name: "Source",
+      nameLocation: "middle",
+      nameGap: 30,
+    },
+    yAxis: {
+      type: "category",
+      data: emotionLabels,
+      splitArea: { show: true },
+      name: "Emotion",
+      nameLocation: "middle",
+      nameGap: 40,
+    },
+    visualMap: {
+      min: 0,
+      max: Math.max(...heatmapData.map((d) => d[2]), 1),
+      calculable: true,
+      orient: "horizontal",
+      left: "center",
+      bottom: "5%",
+      inRange: {
+        color: ["#e0f3f8", "#abd9e9", "#74add1", "#4575b4", "#313695"],
       },
-      yAxis: {
-        type: "category",
-        data: emotionLabels,
-        splitArea: { show: true },
-        name: "Emotion",
-        nameLocation: "middle",
-        nameGap: 40,
-      },
-      visualMap: {
-        min: 0,
-        max: Math.max(...heatmapData.map((d) => d[2])),
-        calculable: true,
-        orient: "horizontal",
-        left: "center",
-        bottom: "5%",
-        inRange: {
-          color: ["#e0f3f8", "#abd9e9", "#74add1", "#4575b4", "#313695"],
-        },
-        textStyle: { color: "#ffffff", fontSize: 12 },
-      },
-      series: [
-        {
-          name: "Emotion × Source",
-          type: "heatmap",
-          data: heatmapData,
-          label: { show: false },
-          emphasis: {
-            itemStyle: {
-              shadowBlur: 10,
-              shadowColor: "rgba(0, 0, 0, 0.5)",
-            },
+      textStyle: { color: "#ffffff", fontSize: 12 },
+    },
+    series: [
+      {
+        name: "Emotion × Source",
+        type: "heatmap",
+        data: heatmapData,
+        label: { show: false },
+        emphasis: {
+          itemStyle: {
+            shadowBlur: 10,
+            shadowColor: "rgba(0, 0, 0, 0.5)",
           },
         },
-      ],
-    };
-
-    chart.setOption(option);
-
-    const resizeObserver = new ResizeObserver(() => {
-    if (chartRef.current) {
-      chart.resize();
-    }
+      },
+    ],
   });
-    resizeObserver.observe(chartRef.current);
 
+  // Initialize and dispose main card chart
+  useEffect(() => {
+    if (!chartRefMain.current || !heatmapData.length || showData) return;
+
+    if (!chartInstanceMain.current) {
+      chartInstanceMain.current = echarts.init(chartRefMain.current);
+    }
+    const chart = chartInstanceMain.current;
+
+    chart.setOption(getChartOption());
+
+    // Resize observer to handle container resizing
+    const resizeObserver = new ResizeObserver(() => {
+      if (chartRefMain.current) chart.resize();
+    });
+    resizeObserver.observe(chartRefMain.current);
 
     return () => {
       resizeObserver.disconnect();
       chart.dispose();
-      chartInstance.current = null;
+      chartInstanceMain.current = null;
     };
   }, [heatmapData, showData]);
 
-  // New effect to resize and refresh chart when modal opens and chart view is active
+  // Initialize and dispose modal chart
   useEffect(() => {
-    if (modalOpen && !showData && chartInstance.current) {
-      const timeout = setTimeout(() => {
-        chartInstance.current.resize();
-        chartInstance.current.setOption(chartInstance.current.getOption());
-      }, 100); // allow modal open animation
-      return () => clearTimeout(timeout);
-    }
-  }, [modalOpen, showData]);
+    if (!modalOpen || showData || !heatmapData.length) return;
 
+    if (!chartRefModal.current) return;
+
+    if (chartInstanceModal.current) {
+      chartInstanceModal.current.dispose();
+      chartInstanceModal.current = null;
+    }
+
+    chartInstanceModal.current = echarts.init(chartRefModal.current);
+    const chart = chartInstanceModal.current;
+
+    chart.setOption(getChartOption());
+
+    const resizeObserver = new ResizeObserver(() => {
+      if (chartRefModal.current) chart.resize();
+    });
+    resizeObserver.observe(chartRefModal.current);
+
+    return () => {
+      resizeObserver.disconnect();
+      if (chartInstanceModal.current) {
+        chartInstanceModal.current.dispose();
+        chartInstanceModal.current = null;
+      }
+    };
+  }, [modalOpen, heatmapData, showData]);
+
+  // CSV Download
   const downloadCSV = () => {
     if (!formattedData.length) return;
     const header = ["Source", "Emotion", "Count"];
@@ -230,7 +253,7 @@ const EmotionSourceHeatmap = ({ filteredData }) => {
     document.body.removeChild(link);
   };
 
-  if (loading) return <div><Loader  /></div>;
+  if (loading) return <div><Loader /></div>;
   if (error) return <div className="text-red-600 dark:text-red-400">{error}</div>;
   if (!heatmapData.length) return <div>No heatmap data available.</div>;
 
@@ -246,10 +269,7 @@ const EmotionSourceHeatmap = ({ filteredData }) => {
         </thead>
         <tbody>
           {formattedData.map((row, idx) => (
-            <tr
-              key={idx}
-              className="border-b border-gray-200 dark:border-gray-700"
-            >
+            <tr key={idx} className="border-b border-gray-200 dark:border-gray-700">
               <td className="px-3 py-2">{row.source}</td>
               <td className="px-3 py-2">{row.emotion}</td>
               <td className="px-3 py-2">{row.count}</td>
@@ -259,8 +279,6 @@ const EmotionSourceHeatmap = ({ filteredData }) => {
       </table>
     </div>
   );
-
-  const renderChart = () => <div ref={chartRef} style={{ width: "100%", height: "100%" }} />;
 
   return (
     <>
@@ -280,8 +298,13 @@ const EmotionSourceHeatmap = ({ filteredData }) => {
             Visualizing emotion distribution across platforms
           </CardDescription>
         </CardHeader>
-        <CardContent className="flex-1 p-4 w-full">
-          {showData ? renderTable() : renderChart()}
+        <CardContent className="flex-1 p-4 w-full" style={{ position: "relative" }}>
+          {/* Chart and Table both rendered but toggled with CSS display */}
+          <div
+            style={{ display: showData ? "none" : "block", width: "100%", height: "100%" }}
+            ref={chartRefMain}
+          />
+          {showData && renderTable()}
         </CardContent>
       </Card>
 
@@ -300,11 +323,13 @@ const EmotionSourceHeatmap = ({ filteredData }) => {
           onShare={shareChart}
           previewActive={showData}
         >
-          <div className="h-[420px] w-full">
-            <div style={{ display: showData ? "none" : "block", width: "100%", height: "100%" }} ref={chartRef} />
-
-{showData && renderTable()}
-
+          <div className="h-[420px] w-full" style={{ position: "relative" }}>
+            {/* Render both but toggle visibility */}
+            <div
+              style={{ display: showData ? "none" : "block", width: "100%", height: "100%" }}
+              ref={chartRefModal}
+            />
+            {showData && renderTable()}
           </div>
         </DetailsModal>
       )}

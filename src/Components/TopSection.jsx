@@ -186,11 +186,11 @@ const TopSection = () => {
 
   return (
     <div className="w-full rounded-lg p-6 bg-white dark:bg-[#0f172a] ">
-       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 cursor-pointer">
+       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 cursor-pointer  ">
         {stats.map((stat, index) => (
           <div
             key={index}
-            className="bg-gray-100 dark:bg-[#1e293b] rounded-xl p-5 shadow-md flex flex-col justify-between"
+            className="bg-gray-100 dark:bg-[#1e293b] rounded-xl  hover:ring-2 ring-blue-500 p-5 shadow-md flex flex-col justify-between"
           type="button"
             onClick={() => handleStatClick(stat)}
           >
