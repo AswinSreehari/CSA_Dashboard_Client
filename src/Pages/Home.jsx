@@ -49,7 +49,7 @@ export const Example = () => {
   const [isDark, setIsDark] = useState(true);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
   const [selectedMenu, setSelectedMenu] = useState("dashboard");
   const [filters, setFilters] = useState({
     dateFrom: "",

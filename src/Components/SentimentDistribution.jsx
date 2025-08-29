@@ -147,6 +147,8 @@ const SentimentDistribution = ({ filteredData }) => {
   document.body.removeChild(link);
 };
 
+
+
   const { chartData, usePercentages } = useMemo(() => {
     const hasPct =
       dist?.percentages &&
