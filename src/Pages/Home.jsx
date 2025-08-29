@@ -370,7 +370,7 @@ const ExampleContent = ({ isDark, setIsDark, selectedMenu }) => {
             <MentionVolumeChart filteredData={filteredData} />
           </div>
 
-          <div className="flex gap-5 items-start">
+          <div className="flex gap-5 items-start sm:flex-col md:flex-row ">
             <MultiDimensionalComparison filteredData={filteredData} />
             <SentimentRanking filteredData={filteredData} />
           </div>

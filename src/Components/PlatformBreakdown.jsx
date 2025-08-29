@@ -36,7 +36,10 @@ const Toggle = ({
   <div className="flex items-center gap-2">
     <span className="text-xs text-gray-600 dark:text-gray-300">{labelLeft}</span>
     <button
-      onClick={() => onChange(!checked)}
+       onClick={(e) => {
+              e.stopPropagation();
+              onChange(!checked)
+            }}
       className={`relative w-10 h-6 rounded-full cursor-pointer bg-gray-300 dark:bg-gray-700 transition-colors
         ${checked ? "bg-indigo-500" : ""}`}
       aria-pressed={checked}

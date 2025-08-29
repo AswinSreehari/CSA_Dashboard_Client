@@ -108,7 +108,7 @@ const ProductMentionsTreemap = ({ filteredData }) => {
               Visual representation of product mention volume
             </CardDescription>
           </div>
-           
+
         </CardHeader>
         <CardContent className="flex-1 p-4 w-full">
           {showData ? (
@@ -179,7 +179,11 @@ const ProductMentionsTreemap = ({ filteredData }) => {
                   );
                 }}
               >
-                <Tooltip formatter={(value, name) => [`${value} mentions`, name]} />
+                <Tooltip
+  formatter={(value, name) => [`${value} mentions`, name]}
+  labelFormatter={(label) => label?.toString().replace(/^:/, "")}
+/>
+
               </Treemap>
             </ResponsiveContainer>
           )}
@@ -269,7 +273,12 @@ const ProductMentionsTreemap = ({ filteredData }) => {
                   );
                 }}
               >
-                <Tooltip formatter={(value, name) => [`${value} mentions`, name]} />
+                <Tooltip
+  formatter={(value, name) => [`${value} mentions`, name]}
+  labelFormatter={(label) => label?.toString().replace(/^:/, "")}
+/>
+
+
               </Treemap>
             </ResponsiveContainer>
           )}

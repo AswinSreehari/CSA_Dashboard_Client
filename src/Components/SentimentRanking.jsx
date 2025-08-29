@@ -261,7 +261,10 @@ const SentimentRanking = ({ filteredData }) => {
         {/* Pagination controls */}
         <div className="flex justify-center gap-4 mt-4 px-2">
           <button
-            onClick={handlePrev}
+             onClick={(e) => {
+              e.stopPropagation();
+              handlePrev();
+            }}
             disabled={page === 1}
             className={`px-3 py-1 rounded-md border ${
               page === 1
@@ -275,7 +278,10 @@ const SentimentRanking = ({ filteredData }) => {
             Page {page} of {totalPages || 1}
           </span>
           <button
-            onClick={handleNext}
+             onClick={(e) => {
+              e.stopPropagation();
+              handleNext();
+            }}
             disabled={page === totalPages || totalPages === 0}
             className={`px-3 py-1 rounded-md border ${
               page === totalPages

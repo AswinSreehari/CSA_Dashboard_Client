@@ -13,8 +13,7 @@ const DataSource = () => {
       try {
         setLoading(true);
         const res = await axios.get(`${BASE_URL}/api/feedback/data-source`);  
-        console.log("data is here!->",res.data)
-         setData(res.data);
+          setData(res.data);
       } catch (err) {
         setError(err.message || "Failed to fetch data source");
       } finally {

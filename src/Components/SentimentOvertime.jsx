@@ -202,7 +202,7 @@ const downloadCSV = () => {
     {/* Main chart card - clickable to open modal */}
     <div
       ref={chartRef}
-      className="w-198 ml-5 my-5 rounded-lg p-6 bg-white dark:bg-[#0f172a] shadow-md cursor-pointer hover:ring-2 ring-blue-300"
+      className="w-198 ml-5 my-5 rounded-lg p-6 bg-white dark:bg-[#0f172a] shadow-md cursor-pointer hover:ring-2 ring-blue-500"
       onClick={() => setModalOpen(true)}
       tabIndex={0}
       role="button"
