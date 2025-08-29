@@ -16,6 +16,7 @@ import {
 import axios from "axios";
 import DetailsModal from "./DetailsModal";
 import { shareChart } from "../lib/Sharechart";
+import Loader from "./Loader";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
@@ -173,7 +174,7 @@ const MentionVolume = ({ filteredData }) => {
     </ResponsiveContainer>
   );
 
-  if (loading) return <div>Loading mention volume...</div>;
+  if (loading) return <div><Loader /></div>;
   if (error) return <div className="text-red-600 dark:text-red-400">Error: {error}</div>;
 
   return (

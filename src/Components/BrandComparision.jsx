@@ -20,6 +20,7 @@ import {
 } from "../Components/ui/card";
 import DetailsModal from "./DetailsModal";
 import { shareChart } from "../lib/Sharechart";
+import Loader from "./Loader";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
@@ -82,7 +83,7 @@ const BrandComparisonChart = ({ filteredData }) => {
     document.body.removeChild(link);
   };
 
-  if (loading) return <div>Loading brand comparison data...</div>;
+  if (loading) return <div><Loader /></div>;
   if (error) return <div className="text-red-600 dark:text-red-400">{error}</div>;
   if (data.length === 0) return <div>No brand comparison data available.</div>;
 

@@ -21,6 +21,7 @@ import {
 } from "../Components/ui/card";
 import DetailsModal from "./DetailsModal";
 import { shareChart } from "../lib/Sharechart";
+import Loader from "./Loader";
 
 echarts.use([
   TitleComponent,
@@ -203,7 +204,7 @@ const TopNegativeDriversWaterfallChart = ({ filteredData }) => {
     document.body.removeChild(link);
   };
 
-  if (loading) return <div>Loading Top Negative Drivers data...</div>;
+  if (loading) return <div><Loader /></div>;
   if (error) return <div className="text-red-600 dark:text-red-400">{error}</div>;
   if (!chartData.categories.length) return <div>No data available</div>;
 

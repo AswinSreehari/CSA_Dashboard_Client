@@ -21,6 +21,7 @@ import {
 
 import DetailsModal from "./DetailsModal";
 import { shareChart } from "../lib/Sharechart";
+import Loader from "./Loader";
 
 echarts.use([
   TooltipComponent,
@@ -229,7 +230,7 @@ const EmotionSourceHeatmap = ({ filteredData }) => {
     document.body.removeChild(link);
   };
 
-  if (loading) return <div>Loading emotion × source heatmap...</div>;
+  if (loading) return <div><Loader  /></div>;
   if (error) return <div className="text-red-600 dark:text-red-400">{error}</div>;
   if (!heatmapData.length) return <div>No heatmap data available.</div>;
 

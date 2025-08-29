@@ -21,6 +21,7 @@ import {
 } from "../Components/ui/card";
 import DetailsModal from "./DetailsModal";
 import { shareChart } from "../lib/Sharechart";
+import { Loader } from "lucide-react";
 
 const BRAND_COLORS = {
   "Google Pixel": "#2563eb",
@@ -135,7 +136,7 @@ const MultiDimensionalComparison = ({ filteredData }) => {
     document.body.removeChild(link);
   };
 
-  if (loading) return <div>Loading comparison chart...</div>;
+  if (loading) return <div><Loader /></div>;
   if (error)
     return <div className="text-red-600 dark:text-red-400">Error: {error}</div>;
 
@@ -143,7 +144,7 @@ const MultiDimensionalComparison = ({ filteredData }) => {
     <>
       {/* Main card clickable to open modal */}
       <Card
-        className="bg-white dark:bg-[#0f172a] w-180 mt-5 rounded-lg p-6 cursor-pointer hover:ring-2 ring-blue-400"
+        className="bg-white dark:bg-[#0f172a] w-180 h-130 mt-5 rounded-lg p-6 cursor-pointer hover:ring-2 ring-blue-500"
         onClick={() => setModalOpen(true)}
         ref={chartRef}
         tabIndex={0}

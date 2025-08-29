@@ -24,6 +24,7 @@ import {
 } from "../Components/ui/chart";
 import DetailsModal from "./DetailsModal";
 import { shareChart } from "../lib/Sharechart";
+import Loader from "./Loader";
 
 // Toggle switch for % / numbers mode
 const Toggle = ({
@@ -85,25 +86,27 @@ const toPercentages = (arr) =>
 
 const aggregateFilteredData = (filteredData) => {
   const map = {};
-  filteredData.forEach(({ platform, sentiment }) => {
-    if (!platform) return;
-    if (!map[platform]) map[platform] = { positive: 0, neutral: 0, negative: 0 };
+  filteredData.forEach(({ source, sentiment }) => { // <--- CHANGED platform -> source
+    if (!source) return;
+    if (!map[source]) map[source] = { positive: 0, neutral: 0, negative: 0 };
 
     const label = sentiment?.label || "neutral";
     if (label === "positive") {
-      map[platform].positive += 1;
+      map[source].positive += 1;
     } else if (label === "negative" || label === "very negative") {
-      map[platform].negative += 1;
+      map[source].negative += 1;
     } else {
-      map[platform].neutral += 1;
+      map[source].neutral += 1;
     }
   });
 
-  return Object.entries(map).map(([platform, counts]) => ({
-    platform,
+  // changed platform -> source
+  return Object.entries(map).map(([source, counts]) => ({
+    platform: source, // provide as platform for rest of chart logic
     ...counts,
   }));
 };
+
 
 const LegendRow = () => {
   const items = [
@@ -288,7 +291,7 @@ const PlatformBreakdown = ({ filteredData }) => {
     </ChartContainer>
   );
 
-  if (loading) return <div>Loading Platform Data...</div>;
+  if (loading) return <div><Loader /></div>;
   if (error)
     return (
       <div className="text-red-600 dark:text-red-400">Error: {error}</div>

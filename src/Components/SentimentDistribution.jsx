@@ -17,6 +17,7 @@ import {
 import axios from "axios";
 import DetailsModal from "./DetailsModal";
 import { shareChart } from "../lib/Sharechart";
+import Loader from "./Loader";
 
 
 
@@ -229,7 +230,7 @@ const SentimentDistribution = ({ filteredData }) => {
   const hoveredSentiment = chartData[activeIndex]?.key;
   const innerPlatforms = platformBreakdown?.[hoveredSentiment] || [];
 
-  if (loading) return <div>Loading sentiment distribution...</div>;
+  if (loading) return <div><Loader /></div>;
   if (error)
     return (
       <div className="text-red-500 dark:text-red-400">

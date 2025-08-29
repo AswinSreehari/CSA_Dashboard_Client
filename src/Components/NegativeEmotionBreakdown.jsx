@@ -22,6 +22,7 @@ import {
 } from "../Components/ui/card";
 import DetailsModal from "./DetailsModal";
 import { shareChart } from "../lib/Sharechart";
+import Loader from "./Loader";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
@@ -85,7 +86,7 @@ const NegativeEmotionsBreakdown = ({ filteredData }) => {
     document.body.removeChild(link);
   };
 
-  if (loading) return <div>Loading negative emotions breakdown...</div>;
+  if (loading) return <div><Loader /></div>;
   if (error) return <div className="text-red-600 dark:text-red-400">{error}</div>;
   if (!data.length) return <div>No negative emotions data available.</div>;
 

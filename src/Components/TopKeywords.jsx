@@ -15,6 +15,7 @@ import {
 
 import DetailsModal from "./DetailsModal";
 import { shareChart } from "../lib/Sharechart";
+import Loader from "./Loader";
 
 // oklch color constants
 const GREEN_COLOR = "oklch(58.8% 0.158 241.966)";
@@ -135,7 +136,7 @@ const TopKeywords = ({ filteredData, sidebarOpen }) => {
     document.body.removeChild(link);
   };
 
-  if (loading) return <div>Loading keywords...</div>;
+  if (loading) return <div><Loader sidebarOpen={sidebarOpen} /></div>;
   if (error) return <div style={{ color: RED_COLOR }}>Error: {error}</div>;
 
   if (!keywords.length) {

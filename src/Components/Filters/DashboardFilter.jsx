@@ -9,6 +9,9 @@ import {
 import { Command, CommandGroup, CommandInput, CommandItem, CommandList } from "../ui/command";
 import { ListFilter } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
+import axios from "axios";
+
+const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 const platformOptions = [
   { id: "all", name: "All Platforms" },
@@ -36,7 +39,26 @@ export default function DashboardFilter({
     setSelectedPlatform(platformFilter ? platformFilter.value : null);
   }, [filters]);
 
-  // Handle selection
+  // Fetch feedback data when platform changes
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        if (!selectedPlatform || selectedPlatform === "all") {
+          onDataChange(null); // clear filter, show all
+          return;
+        }
+        const res = await axios.get(`${BASE_URL}/api/feedback/filterdata`, {
+          params: { platform: selectedPlatform }
+        });
+        onDataChange(res.data.data || []);
+      } catch (err) {
+        onDataChange([]); // provide empty data on error
+      }
+    }
+    fetchData();
+    // eslint-disable-next-line
+  }, [selectedPlatform, onDataChange]);
+
   const onSelectPlatform = (id) => {
     const newFilters = filters.filter(f => f.type !== "platform");
     if (id !== "all") {
@@ -48,9 +70,8 @@ export default function DashboardFilter({
     commandInputRef.current?.blur();
   };
 
-  // Remove platform selected
   const removePlatform = (e) => {
-    e.stopPropagation(); // prevent popover toggle on X click
+    e.stopPropagation();
     const newFilters = filters.filter(f => f.type !== "platform");
     onFilterChange(newFilters);
     setSelectedPlatform(null);
@@ -61,7 +82,6 @@ export default function DashboardFilter({
 
   return (
     <div className="flex items-center gap-4">
-      {/* Selected platform chip */}
       {selectedPlatform && selectedPlatform !== "all" && (
         <div
           className="flex items-center rounded-full border border-gray-300 bg-white dark:bg-[#0f172a] dark:text-neutral-200 px-4 py-1 text-gray-800 text-base"
@@ -72,7 +92,6 @@ export default function DashboardFilter({
             lineHeight: "1",
           }}
         >
-          
           <span className="font-semibold text-gray-900  dark:text-neutral-200">{getPlatformName(selectedPlatform)}</span>
           <button
             onClick={removePlatform}
@@ -85,8 +104,6 @@ export default function DashboardFilter({
           </button>
         </div>
       )}
-
-      {/* Add Filter Button with Popover */}
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button

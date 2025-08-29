@@ -16,6 +16,7 @@ const BASE_URL = import.meta.env.VITE_BASE_URL;
 import html2canvas from "html2canvas";
 import DetailsModal from "./DetailsModal";
 import { shareChart } from "../lib/Sharechart";
+import Loader from "./Loader";
 
 
 const SentimentOvertime = ({ filteredData }) => {
@@ -98,7 +99,7 @@ const downloadCSV = () => {
 
  
  
-  if (loading) return <div>Loading sentiment over time...</div>;
+  if (loading) return <div><Loader /></div>;
   if (error)
     return <div className="text-red-600 dark:text-red-400">Error: {error}</div>;
 

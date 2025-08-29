@@ -7,6 +7,7 @@ import axios from "axios";
 import { FaArrowLeft, FaArrowRight } from "react-icons/fa6";
 import DetailsModal from "./DetailsModal";
 import { shareChart } from "../lib/Sharechart";
+import Loader from "./Loader";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const ROWS_PER_PAGE = 4;
@@ -146,7 +147,7 @@ const SentimentRanking = ({ filteredData }) => {
     document.body.removeChild(link);
   };
 
-  if (loading) return <div>Loading sentiment rankings...</div>;
+  if (loading) return <div><Loader /></div>;
   if (error)
     return <div className="text-red-600 dark:text-red-400">Error: {error}</div>;
 
@@ -154,7 +155,7 @@ const SentimentRanking = ({ filteredData }) => {
     <>
       {/* Main card clickable to open modal */}
       <Card
-        className="text-gray-900 dark:text-white bg-white dark:bg-[#0f172a] shadow-md rounded-xl p-4 w-180 my-5 h-128 flex flex-col cursor-pointer hover:ring-2 ring-blue-500"
+        className="text-gray-900 dark:text-white bg-white dark:bg-[#0f172a] shadow-md rounded-xl p-4 w-180 my-5 h-130 flex flex-col cursor-pointer hover:ring-2 ring-blue-500"
         onClick={() => setModalOpen(true)}
         ref={chartRef}
         tabIndex={0}

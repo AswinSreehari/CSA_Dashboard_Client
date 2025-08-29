@@ -21,6 +21,7 @@ import {
 } from "../Components/ui/card";
 import DetailsModal from "./DetailsModal";
 import { shareChart } from "../lib/Sharechart";
+import Loader from "./Loader";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
@@ -105,7 +106,7 @@ const TrendingRaceModel = ({ filteredData }) => {
     fetchTrendingModels();
   }, [filteredData]);
 
-  if (loading) return <div>Loading trending models...</div>;
+  if (loading) return <div><Loader /></div>;
   if (error) return <div className="text-red-600 dark:text-red-400">{error}</div>;
   if (!framesData.length) return <div>No data available</div>;
 
