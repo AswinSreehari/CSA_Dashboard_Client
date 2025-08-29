@@ -249,8 +249,8 @@ const SentimentDistribution = ({ filteredData }) => {
           <PieChart width={400} height={400}>
             {/* Centered label */}
             <text
-              x="220"
-              y="170"
+              x="50%"
+              y="45%"
               textAnchor="middle"
               dominantBaseline="middle"
               className="font-bold text-neutral-700 dark:text-neutral-200"
@@ -264,8 +264,8 @@ const SentimentDistribution = ({ filteredData }) => {
               Total
             </text>
             <text
-              x="220"
-              y="200"
+              x="50%"
+              y="55%"
               textAnchor="middle"
               dominantBaseline="middle"
               className="font-bold  text-neutral-700 dark:text-neutral-200"

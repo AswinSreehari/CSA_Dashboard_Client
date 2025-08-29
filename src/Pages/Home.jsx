@@ -361,20 +361,36 @@ const ExampleContent = ({ isDark, setIsDark, selectedMenu }) => {
             </div>
           </div>
 
-          <div className="flex ">
+          {/* <div className="flex ">
             <PlatformBreakdown filteredData={filteredData} />
             <SentimentOvertime filteredData={filteredData} />
-          </div>
+          </div> */}
+
+          <div className="min-w-0 grid gap-5 [grid-template-columns:repeat(auto-fit,minmax(280px,1fr))]">
+            <div className="min-w-0 ">
+              <PlatformBreakdown filteredData={filteredData} />
+            </div>
+            <div className="min-w-0">
+              <SentimentOvertime filteredData={filteredData} />
+            </div>
+            </div>
+
+
 
           <div>
             <MentionVolumeChart filteredData={filteredData} />
           </div>
 
-          <div className="flex gap-5 items-start sm:flex-col md:flex-row ">
-            <MultiDimensionalComparison filteredData={filteredData} />
-            <SentimentRanking filteredData={filteredData} />
-          </div>
+    
 
+          <div className="min-w-0 grid gap-5  [grid-template-columns:repeat(auto-fit,minmax(280px,1fr))]">
+            <div className="min-w-0 ">
+              <MultiDimensionalComparison filteredData={filteredData} />
+            </div>
+            <div className="min-w-0">
+              <SentimentRanking filteredData={filteredData} />
+            </div>
+          </div>
           <div className="min-w-0 grid gap-5  [grid-template-columns:repeat(auto-fit,minmax(280px,1fr))]">
             <div className="min-w-0 ">
               < TrendingModelsBarRace filteredData={filteredData} />

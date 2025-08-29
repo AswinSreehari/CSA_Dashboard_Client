@@ -144,7 +144,7 @@ const MultiDimensionalComparison = ({ filteredData }) => {
     <>
       {/* Main card clickable to open modal */}
       <Card
-        className="bg-white dark:bg-[#0f172a] w-180 h-130 mt-5 rounded-lg p-6 cursor-pointer hover:ring-2 ring-blue-500"
+        className="bg-white dark:bg-[#0f172a] w-full h-130 mt-5 rounded-lg p-6 cursor-pointer hover:ring-2 ring-blue-500"
         onClick={() => setModalOpen(true)}
         ref={chartRef}
         tabIndex={0}

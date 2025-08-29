@@ -305,13 +305,13 @@ const PlatformBreakdown = ({ filteredData }) => {
       {/* Main Card (clickable for modal) */}
       <Card
         ref={chartRef}
-        className="flex flex-col bg-white dark:bg-[#0f172a] w-150 h-120 my-5 rounded-lg shadow-md cursor-pointer hover:ring-2 ring-blue-500"
+        className="flex flex-col bg-white dark:bg-[#0f172a] w-full h-120 my-5 rounded-lg shadow-md cursor-pointer hover:ring-2 ring-blue-500"
         onClick={() => setModalOpen(true)}
         tabIndex={0}
         role="button"
         aria-label="Open platform breakdown details"
       >
-        <CardHeader className="pb-2 flex flex-row items-start justify-between">
+        <CardHeader className="pb-2 flex flex-row w-full items-start justify-between">
           <div>
             <div className="flex items-center gap-2">
               <span className="h-2.5 w-2.5 rounded-full bg-indigo-400 shadow-[0_0_10px_rgba(129,140,248,0.8)]" />
