@@ -111,7 +111,7 @@ export default function DashboardFilter({
             role="combobox"
             aria-expanded={open}
             size="m"
-            className="transition group h-10 w-48 text-sm items-center rounded-sm flex gap-2 px-3"
+            className="transition group h-10 w-48 text-sm cursor-pointer items-center rounded-sm flex gap-2 px-3"
           >
             <ListFilter className="size-5 shrink-0 transition-all text-muted-foreground group-hover:text-primary" />
             {"Add Filter"}
