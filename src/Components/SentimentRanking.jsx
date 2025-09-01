@@ -155,7 +155,7 @@ const SentimentRanking = ({ filteredData }) => {
     <>
       {/* Main card clickable to open modal */}
       <Card
-        className="text-gray-900 dark:text-white bg-white dark:bg-[#0f172a] shadow-md rounded-xl p-4 w-180 my-5 h-130 flex flex-col cursor-pointer hover:ring-2 ring-blue-500"
+        className="text-gray-900 dark:text-white bg-white dark:bg-[#0f172a] shadow-md rounded-xl p-4 w-full  my-5 h-130 flex flex-col cursor-pointer hover:ring-2 ring-blue-500"
         onClick={() => setModalOpen(true)}
         ref={chartRef}
         tabIndex={0}

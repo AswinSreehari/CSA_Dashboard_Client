@@ -160,8 +160,9 @@ const Sidebar = ({ selected, setSelected, open, setOpen }) => {
           /> */}
         </div>
       )}
-
-      <ToggleClose open={open} setOpen={setOpen} />
+<div className=" relaative mt-auto">
+<ToggleClose open={open} setOpen={setOpen} />
+</div>
     </nav>
   );
 };

@@ -210,7 +210,7 @@ const PlatformBreakdown = ({ filteredData }) => {
 
   const renderBarChart = () => (
     <ChartContainer config={chartConfig} className="w-full pb-2">
-      <ResponsiveContainer width="100%" height={320}>
+      <ResponsiveContainer width="100%" height="100%">
         <BarChart data={dataset} margin={{ top: 10, left: 10, bottom: 0 }}>
           <CartesianGrid
             stroke="rgba(0,0,0,0.1)"
@@ -302,8 +302,7 @@ const PlatformBreakdown = ({ filteredData }) => {
 
   return (
     <>
-      {/* Main Card (clickable for modal) */}
-      <Card
+       <Card
         ref={chartRef}
         className="flex flex-col bg-white dark:bg-[#0f172a] w-full h-120 my-5 rounded-lg shadow-md cursor-pointer hover:ring-2 ring-blue-500"
         onClick={() => setModalOpen(true)}
